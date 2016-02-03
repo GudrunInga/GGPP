@@ -62,6 +62,7 @@ public class SinglePlayer extends SampleGamer {
 		ArrayList<Move> noMoves = new ArrayList<Move>();
 		// Erum ekki búin að heimsækja state nema að vera búin að heimsækja börnin
 		explore(start, 0, 0, noMoves);
+		System.out.println(System.currentTimeMillis()); //Output the time it took to search
 	}
 
 	/*
@@ -74,8 +75,7 @@ public class SinglePlayer extends SampleGamer {
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 		// TODO Auto-generated method stub
-		//Telja moves af því að við
-		//labba niður gamla bestPath,
+
 		stopTime = System.currentTimeMillis() + timeout - 500;
 
 		if(!isSolved())
@@ -88,6 +88,7 @@ public class SinglePlayer extends SampleGamer {
 				currState = stateMachine.getNextState(currState, nextMove);
 			}
 			explore(currState, 0, 0, new ArrayList<Move>());
+			//System.out.println(System.currentTimeMillis()); //Output the time it took to search
 
 		}
 		if (bestPath.isEmpty())
