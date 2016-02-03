@@ -42,8 +42,8 @@ public class SinglePlayer extends SampleGamer {
 	 * after receiving a start message (before the game starts)
 	 */
 	// Get the state machine
-	public StateMachine stateMachine = getStateMachine();
-	public ArrayList<Integer> visitedState;
+	public StateMachine stateMachine;// = getStateMachine();
+	public ArrayList<Integer> visitedState = new ArrayList<Integer>();
 	public ArrayList<Move> bestPath;
 	public int bestValue = 0;
 	public int moveCount = 0;
@@ -54,6 +54,10 @@ public class SinglePlayer extends SampleGamer {
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+		long startTime = System.currentTimeMillis();
+		stateMachine = getStateMachine();
+		bestValue = 0;
+		moveCount = 0;
 		stopTime = System.currentTimeMillis() + timeout - 500;
 		//Byrja að ná í initial state - hoping it works
 		MachineState start = stateMachine.getInitialState();
@@ -61,8 +65,10 @@ public class SinglePlayer extends SampleGamer {
 		//lista/array af MachineStates sem eru þau state sem við erum búin að heimsækja
 		ArrayList<Move> noMoves = new ArrayList<Move>();
 		// Erum ekki búin að heimsækja state nema að vera búin að heimsækja börnin
-		explore(start, 0, 0, noMoves);
-		System.out.println(System.currentTimeMillis()); //Output the time it took to search
+		//System.out.println("On our way to search");
+		explore(start, 0, 1, noMoves);
+		System.out.println("Time taken " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
+		//System.out.println("Best Path Found");
 	}
 
 	/*
@@ -81,22 +87,29 @@ public class SinglePlayer extends SampleGamer {
 		if(!isSolved())
 		{
 			MachineState currState = getCurrentState();
-			for(Move move : bestPath)
+			if(bestPath != null)
 			{
-				ArrayList<Move> nextMove = new ArrayList<Move>();
-				nextMove.add(move);
-				currState = stateMachine.getNextState(currState, nextMove);
+				for(Move move : bestPath)
+				{
+					ArrayList<Move> nextMove = new ArrayList<Move>();
+					nextMove.add(move);
+					currState = stateMachine.getNextState(currState, nextMove);
+				}
 			}
-			explore(currState, 0, 0, new ArrayList<Move>());
+			//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
+			explore(currState, 0, 1, new ArrayList<Move>());
 			//System.out.println(System.currentTimeMillis()); //Output the time it took to search
 
 		}
-		if (bestPath.isEmpty())
+		if (bestPath == null)
 		{
+			//System.out.println("We are in getRandomMove!!!!!");
 			return stateMachine.getRandomMove(getCurrentState(), getRole());
 		}
 		else
 		{
+			//System.out.println("Size of bestPath " + bestPath.size());
+			//System.out.println("MOVE COUNT    " + moveCount + " BEST VALUE " + bestValue);
 			Move nextMove = bestPath.get(moveCount);
 			moveCount++;
 			return nextMove;
@@ -117,28 +130,34 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
+		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
+			//System.out.println("Stop");
 			return;
 		}
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node))
 		{
+			//System.out.println("Already Checked");
 			return;
 		}
 		if(stateMachine.isTerminal(node))
 		{
+			//System.out.println("Found Terminal");
 			evaluate(node, movesMade);
 		}
 		if(isSolved())
 		{
+			//System.out.println("Is Solved");
 			return;
 		}
 		if (depth == maxDepth)
 		{
+			//System.out.println("MaxDepth reached");
 			return;
 		}
-
+		//System.out.println("I should get here!!!!!");
 		visitedState.add(node.hashCode());
 		depth++;
 		try{
@@ -146,9 +165,9 @@ public class SinglePlayer extends SampleGamer {
 			{
 				ArrayList<Move> nextMove = new ArrayList<Move>();
 				nextMove.add(child);
-				movesMade.add(child);
-				explore(stateMachine.getNextState(node, nextMove), depth, maxDepth, movesMade);
-
+				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
+				childMove.add(child);
+				explore(stateMachine.getNextState(node, nextMove), depth, maxDepth, childMove);
 			}
 		}
 		catch(Exception e){
@@ -156,19 +175,22 @@ public class SinglePlayer extends SampleGamer {
 			System.out.println("Either no successor state or no legal moves");
 		}
 
-
-		if(depth == 0)
+		//System.out.println("Depth " + depth);
+		// Depth = 1 is the root because we have incremented depth in the method
+		if(depth == 1)
 		{
+			//System.out.println("depth == 0");
+			maxDepth++;
 			visitedState = new ArrayList<Integer>();
 			ArrayList<Move> noMoves = new ArrayList<Move>();
-			explore(node, depth, ++maxDepth, noMoves);
+			explore(node, 0, maxDepth, noMoves);
 		}
 	}
 
 	public boolean isChecked(MachineState node)
 	{
 		//return true if node has been visited
-		if(visitedState.contains(node))
+		if(visitedState.contains(node.hashCode()))
 		{
 			return true;
 		}
@@ -179,6 +201,7 @@ public class SinglePlayer extends SampleGamer {
 	{
 		try{
 			int value = stateMachine.getGoal(node, getRole());
+			//System.out.println("VALUE   " + value);
 			if (value > bestValue)
 			{
 				bestPath = currentPath;
@@ -186,6 +209,7 @@ public class SinglePlayer extends SampleGamer {
 				moveCount = 0;
 				// If we improve the best path then the bestPath was found from out curr location and so
 				// we have moved 0 steps through it
+				System.out.println("BEST VALUE " + value+ "\n");
 			}
 
 		}
