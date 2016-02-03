@@ -7,6 +7,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class SinglePlayer extends SampleGamer {
+	//TODO Global variable that stores the best solution so far.
 /*
  * Implement searching for a solution of the game.
  * I suggest to use iterative deepening depth-first search and a global variable that
