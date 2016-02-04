@@ -1,0 +1,30 @@
+Buttons:
+	Time taken for search 82
+	Time taken for search 54
+	Time taken for search 28		Average = 42.8 milliseconds (0.0428 sec)
+	Time taken for search 22
+	Time taken for search 28
+Pancakes:
+	Time taken for search 792
+	Time taken for search 523
+	Time taken for search 533		Average = 571 milliseconds (0.571  sec)
+	Time taken for search 518
+	Time taken for search 489
+Asteroids:
+	Time taken for search 971
+	Time taken for search 776
+	Time taken for search 860		Average = 847.6 milliseconds (0.8476 sec)
+	Time taken for search 826
+	Time taken for search 805
+Hanoi:
+	Time taken for search 1172
+	Time taken for search 1048
+	Time taken for search 1083		Average = 1085.6 milliseconds (1.0856 sec)
+	Time taken for search 1044
+	Time taken for search 1081
+aipsrovers01:
+	Time taken for search 17436
+	Time taken for search 15494
+	Time taken for search 15041	Average = 15729.6 milliseconds (15.7296 sec)
+	Time taken for search 14996
+	Time taken for search 15681

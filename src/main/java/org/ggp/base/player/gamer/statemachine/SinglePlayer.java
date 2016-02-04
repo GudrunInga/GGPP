@@ -41,7 +41,7 @@ public class SinglePlayer extends SampleGamer {
 
 		//Let the search begin
 		explore(start, 0, 1, noMoves);
-		System.out.println("Time taken " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
+		System.out.println("Time taken for search " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
 	}
 
 	/*
@@ -69,7 +69,7 @@ public class SinglePlayer extends SampleGamer {
 					currState = stateMachine.getNextState(currState, nextMove);
 				}
 			}
-			System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
+			//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
 			explore(currState, 0, 1, new ArrayList<Move>());
 			//System.out.println(System.currentTimeMillis()); //Output the time it took to search
 
@@ -158,7 +158,7 @@ public class SinglePlayer extends SampleGamer {
 		{
 			//System.out.println("depth == 0");
 			maxDepth++;
-			System.out.println("Max depth:" + maxDepth);
+			//System.out.println("Max depth:" + maxDepth);
 			visitedState = new ArrayList<Integer>();
 			ArrayList<Move> noMoves = new ArrayList<Move>();
 			explore(node, 0, maxDepth, noMoves);
@@ -187,8 +187,9 @@ public class SinglePlayer extends SampleGamer {
 				moveCount = 0;
 				// If we improve the best path then the bestPath was found from out curr location and so
 				// we have moved 0 steps through it
-				System.out.println("BEST VALUE " + value+ "\n");
+				//System.out.println("BEST VALUE " + value+ "\n");
 			}
+
 		}
 		catch (Exception e){
 			System.out.println("State should be terminal, but no defined goal");
