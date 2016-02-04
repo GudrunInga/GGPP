@@ -11,20 +11,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class SinglePlayer extends SampleGamer {
-/*
- * Implement searching for a solution of the game.
- * I suggest to use iterative deepening depth-first search and a global variable that
- * stores the best solution found so far.
- * The Gamer class you created has a method getCurrentState() to get the current state of the
- * game and getStateMachine() to get a state machine representing the game.
- * This state machine can be used to get legal moves, compute successor states, ...,
- * that you will need to implement the search.
- */
-/*
- * When implementing the search,
- * make sure that you stop searching before the time is up!
- * NEVER GO OVER THE TIME LIMIT!
- */
 
 /*
  * When the search finishes, output the time it took (e.g., using System.out.println(...)).
@@ -32,46 +18,30 @@ public class SinglePlayer extends SampleGamer {
 
 // Check if your implementation is correct by running the tests.
 
-/*
- * Check if your implementation is fast enough
- * (is able to solve the games below in the given time).
- */
-	/*
-	 * Override the stateMachineMetaGame(..)-method to change what the player does
-	 * after receiving a start message (before the game starts)
-	 */
-	// Get the state machine
-	public StateMachine stateMachine;// = getStateMachine();
-	public ArrayList<Integer> visitedState = new ArrayList<Integer>();
+	public StateMachine stateMachine;
+	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
 	public int bestValue = 0;
 	public int moveCount = 0;
 	public long stopTime;
 
-	//Gleymum að gera lista af moves sem við höfum gert
-
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-		System.out.println(timeout);
-		System.out.println("\n");
-		System.out.println(System.currentTimeMillis());
-
 		long startTime = System.currentTimeMillis();
+		stopTime = timeout - 500;
 		stateMachine = getStateMachine();
 		bestValue = 0;
 		moveCount = 0;
-		stopTime = timeout - 500;
-		//Byrja að ná í initial state - hoping it works
+		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
 
 		//lista/array af MachineStates sem eru þau state sem við erum búin að heimsækja
-		ArrayList<Move> noMoves = new ArrayList<Move>();
-		// Erum ekki búin að heimsækja state nema að vera búin að heimsækja börnin
-		//System.out.println("On our way to search");
+		ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
+
+		//Let the search begin
 		explore(start, 0, 1, noMoves);
 		System.out.println("Time taken " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
-		//System.out.println("Best Path Found");
 	}
 
 	/*
@@ -83,13 +53,13 @@ public class SinglePlayer extends SampleGamer {
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		// TODO Auto-generated method stub
 
 		stopTime = timeout - 500;
 
 		if(!isSolved())
 		{
 			MachineState currState = getCurrentState();
+
 			if(bestPath != null)
 			{
 				for(Move move : bestPath)
@@ -116,7 +86,10 @@ public class SinglePlayer extends SampleGamer {
 			Move nextMove = bestPath.get(moveCount);
 			moveCount++;
 			return nextMove;
+
 		}
+
+
 	}
 
 	/*
@@ -180,7 +153,6 @@ public class SinglePlayer extends SampleGamer {
 
 		}
 
-		//System.out.println("Depth " + depth);
 		// Depth = 1 is the root because we have incremented depth in the method
 		if(depth == 1)
 		{
@@ -217,7 +189,6 @@ public class SinglePlayer extends SampleGamer {
 				// we have moved 0 steps through it
 				System.out.println("BEST VALUE " + value+ "\n");
 			}
-
 		}
 		catch (Exception e){
 			System.out.println("State should be terminal, but no defined goal");
@@ -226,6 +197,7 @@ public class SinglePlayer extends SampleGamer {
 
 	}
 
+	// Best solution found
 	public boolean isSolved()
 	{
 		return bestValue == 100;
