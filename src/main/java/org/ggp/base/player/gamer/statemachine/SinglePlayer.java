@@ -11,7 +11,6 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class SinglePlayer extends SampleGamer {
-	//TODO Global variable that stores the best solution so far.
 /*
  * Implement searching for a solution of the game.
  * I suggest to use iterative deepening depth-first search and a global variable that
@@ -54,11 +53,15 @@ public class SinglePlayer extends SampleGamer {
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+		System.out.println(timeout);
+		System.out.println("\n");
+		System.out.println(System.currentTimeMillis());
+
 		long startTime = System.currentTimeMillis();
 		stateMachine = getStateMachine();
 		bestValue = 0;
 		moveCount = 0;
-		stopTime = System.currentTimeMillis() + timeout - 500;
+		stopTime = timeout - 500;
 		//Byrja að ná í initial state - hoping it works
 		MachineState start = stateMachine.getInitialState();
 
@@ -82,7 +85,7 @@ public class SinglePlayer extends SampleGamer {
 			GoalDefinitionException {
 		// TODO Auto-generated method stub
 
-		stopTime = System.currentTimeMillis() + timeout - 500;
+		stopTime = timeout - 500;
 
 		if(!isSolved())
 		{
@@ -96,7 +99,7 @@ public class SinglePlayer extends SampleGamer {
 					currState = stateMachine.getNextState(currState, nextMove);
 				}
 			}
-			//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
+			System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
 			explore(currState, 0, 1, new ArrayList<Move>());
 			//System.out.println(System.currentTimeMillis()); //Output the time it took to search
 
@@ -136,6 +139,11 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Stop");
 			return;
 		}
+		if(isSolved())
+		{
+			//System.out.println("Is Solved");
+			return;
+		}
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node))
 		{
@@ -147,11 +155,7 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Found Terminal");
 			evaluate(node, movesMade);
 		}
-		if(isSolved())
-		{
-			//System.out.println("Is Solved");
-			return;
-		}
+
 		if (depth == maxDepth)
 		{
 			//System.out.println("MaxDepth reached");
@@ -173,6 +177,7 @@ public class SinglePlayer extends SampleGamer {
 		catch(Exception e){
 			System.out.println(e);
 			System.out.println("Either no successor state or no legal moves");
+
 		}
 
 		//System.out.println("Depth " + depth);
@@ -181,6 +186,7 @@ public class SinglePlayer extends SampleGamer {
 		{
 			//System.out.println("depth == 0");
 			maxDepth++;
+			System.out.println("Max depth:" + maxDepth);
 			visitedState = new ArrayList<Integer>();
 			ArrayList<Move> noMoves = new ArrayList<Move>();
 			explore(node, 0, maxDepth, noMoves);
