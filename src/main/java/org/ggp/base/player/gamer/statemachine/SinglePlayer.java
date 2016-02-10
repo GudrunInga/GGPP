@@ -54,6 +54,11 @@ public class SinglePlayer extends SampleGamer {
 		    explore(start, 0, 1, noMoves);
 		    System.out.println("Time taken for search " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
                 }
+                else
+                {
+                    //solve assuming multiplayer
+                    
+                }
 	}
 
 	/*
