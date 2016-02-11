@@ -25,6 +25,7 @@ public class SinglePlayer extends SampleGamer {
 	public int moveCount = 0;
 	public long stopTime;
         public boolean singlePlayerMode;
+        public int ourRoleIndex;
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
@@ -34,7 +35,7 @@ public class SinglePlayer extends SampleGamer {
 		stopTime = timeout - 500;
 		stateMachine = getStateMachine();
                 //check whether to play as single player game or not
-                if(stateMachine.getroles().size()==1)
+                if(stateMachine.getRoles().size()==1)
                     singlePlayerMode=true;
                 else
                     singlePlayerMode=false;
@@ -56,7 +57,16 @@ public class SinglePlayer extends SampleGamer {
                 }
                 else
                 {
+                    ourRoleIndex=stateMachine.getRoleIndices().get(getRole());
+
                     //solve assuming multiplayer
+                    //search via minimax iterative deepening
+                    maxrole=getRole();
+                    
+		    ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
+
+                    minimax(start,0,1,noMoves,true);
+
                     
                 }
 	}
@@ -108,7 +118,70 @@ public class SinglePlayer extends SampleGamer {
 
 
 	}
+        
+        public void maxi(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
+	{
+                
+		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
+		if(System.currentTimeMillis() >= stopTime)
+		{
+			//System.out.println("Stop");
+			return;
+		}
+		if(isSolved())
+		{
+			//System.out.println("Is Solved");
+			return;
+		}
+		// Geymir best path, breytir ef finnur nýtt best path
+		if(isChecked(node))
+		{
+                        //TODO:return value of node for this path
+			//System.out.println("Already Checked");
+			return;
+		}
+		if(stateMachine.isTerminal(node))
+		{
+			//System.out.println("Found Terminal");
+			evaluate(node, movesMade);
+		}
 
+		if (depth == maxDepth)
+		{
+			//System.out.println("MaxDepth reached");
+			return;
+		}
+
+
+                State.add(node.hashCode());
+		try{
+			for(Move child : stateMachine.getLegalMoves(node, getRole()))
+			{
+				ArrayList<Move> nextMove = new ArrayList<Move>();
+				nextMove.add(child);
+				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
+				childMove.add(child);
+				explore(stateMachine.getNextState(node, nextMove), depth+1, maxDepth, childMove);
+			}
+		}
+		catch(Exception e){
+			System.out.println(e);
+			System.out.println("Either no successor state or no legal moves");
+
+		}
+
+		// Depth = 0 is the root because we have incremented depth in the method
+		if(depth == 0)
+		{
+			//System.out.println("depth == 0");
+			maxDepth++;
+			//System.out.println("Max depth:" + maxDepth);
+			visitedState = new ArrayList<Integer>();
+			ArrayList<Move> noMoves = new ArrayList<Move>();
+			explore(node, 0, maxDepth, noMoves);
+		}
+                
+	}
 	/*
 	 * If you want, you can override the
 	 * stateMachineStop method to do something when the game is over.
@@ -121,7 +194,7 @@ public class SinglePlayer extends SampleGamer {
 	 */
 
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
-	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
+	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade,Role maxrole)
 	{
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
@@ -153,7 +226,6 @@ public class SinglePlayer extends SampleGamer {
 		}
 		//System.out.println("I should get here!!!!!");
 		visitedState.add(node.hashCode());
-		depth++;
 		try{
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
@@ -161,7 +233,7 @@ public class SinglePlayer extends SampleGamer {
 				nextMove.add(child);
 				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
 				childMove.add(child);
-				explore(stateMachine.getNextState(node, nextMove), depth, maxDepth, childMove);
+				explore(stateMachine.getNextState(node, nextMove), depth+1, maxDepth, childMove);
 			}
 		}
 		catch(Exception e){
@@ -170,8 +242,7 @@ public class SinglePlayer extends SampleGamer {
 
 		}
 
-		// Depth = 1 is the root because we have incremented depth in the method
-		if(depth == 1)
+		if(depth == 0)
 		{
 			//System.out.println("depth == 0");
 			maxDepth++;
