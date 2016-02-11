@@ -21,7 +21,9 @@ public class SinglePlayer extends SampleGamer {
 	public StateMachine stateMachine;
 	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
+        //public ArrayList<Move> worstPath;
 	public int bestValue = 0;
+        public int worstValue =100;
 	public int moveCount = 0;
 	public long stopTime;
         public boolean singlePlayerMode;
@@ -137,6 +139,7 @@ public class SinglePlayer extends SampleGamer {
 		if(isChecked(node))
 		{
                         //TODO:return value of node for this path
+                        //TODO:think about this, does it already happen in data structure
 			//System.out.println("Already Checked");
 			return;
 		}
@@ -157,11 +160,9 @@ public class SinglePlayer extends SampleGamer {
 		try{
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
-				ArrayList<Move> nextMove = new ArrayList<Move>();
-				nextMove.add(child);
 				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
 				childMove.add(child);
-				explore(stateMachine.getNextState(node, nextMove), depth+1, maxDepth, childMove);
+				mini(node, nextMove, depth+1, maxDepth, childMove);
 			}
 		}
 		catch(Exception e){
@@ -170,18 +171,33 @@ public class SinglePlayer extends SampleGamer {
 
 		}
 
-		// Depth = 0 is the root because we have incremented depth in the method
+		// Depth = 0 is the root 
 		if(depth == 0)
 		{
+                        //increment depth and start again for iterative deepening
 			//System.out.println("depth == 0");
 			maxDepth++;
 			//System.out.println("Max depth:" + maxDepth);
 			visitedState = new ArrayList<Integer>();
 			ArrayList<Move> noMoves = new ArrayList<Move>();
-			explore(node, 0, maxDepth, noMoves);
+			maxi(node, 0, maxDepth, noMoves);
 		}
                 
 	}
+
+
+        public void mini(Machinestate node,Move ourMove, int depth, int maxdepth,ArrayList<Move> movesMade)
+        {
+            
+            ArrayList<List<Move>> legalMoves= stateMachine.getlegalJointMoves(getRole(),ourMove);
+            for(List<Move> moveSet:legalMoves)
+            {
+                ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
+                childMove.add(child);
+		maxi(stateMachine.getNextState(node, moveSet), depth+1, maxDepth, childMove);
+            }
+
+        }
 	/*
 	 * If you want, you can override the
 	 * stateMachineStop method to do something when the game is over.
@@ -265,6 +281,8 @@ public class SinglePlayer extends SampleGamer {
 
 	public void evaluate(MachineState node, ArrayList<Move> currentPath)
 	{
+
+            //bailout if we find losing play
 		try{
 			int value = stateMachine.getGoal(node, getRole());
 			//System.out.println("VALUE   " + value);
@@ -277,6 +295,13 @@ public class SinglePlayer extends SampleGamer {
 				// we have moved 0 steps through it
 				//System.out.println("BEST VALUE " + value+ "\n");
 			}
+
+                        if(value < worstValue)
+                        {
+                            //worstPath = currentPath;
+                            worstValue = value;
+                        }
+
 
 		}
 		catch (Exception e){
