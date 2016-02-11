@@ -23,10 +23,9 @@ public class SinglePlayer extends SampleGamer {
 	public StateMachine stateMachine;
 	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
-	public HashMap<MachineState, CacheNode> cache;
-	//public ArrayList<Move> worstPath;
+	public HashMap<MachineState, CacheNode> cache; //minmax transposition table
 	public int bestValue = 0;
-    public int worstValue =100;
+    public int worstValue =100; // minmax
 	public int moveCount = 0;
 	public long stopTime;
     public boolean singlePlayerMode;
@@ -38,7 +37,7 @@ public class SinglePlayer extends SampleGamer {
 		long startTime = System.currentTimeMillis();
 		stopTime = timeout - 500;
 		stateMachine = getStateMachine();
-                //check whether to play as single player game or not
+        //check whether to play as single player game or not
         if(stateMachine.getRoles().size()==1)
             singlePlayerMode=true;
         else
@@ -160,7 +159,7 @@ public class SinglePlayer extends SampleGamer {
 				CacheNode searchCacheNode = cache.get(node);
 				if(searchCacheNode != null && searchCacheNode.node == node)
 				{
-					System.out.println("Best Move searchCacheNode " + searchCacheNode.bestMove);
+					System.out.println("Best Move searchCacheNode " + searchCacheNode.bestMove + " " + searchCacheNode.bestValue);
 					return searchCacheNode.bestMove;
 				}
 				else
