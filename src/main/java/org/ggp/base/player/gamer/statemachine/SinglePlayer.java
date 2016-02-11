@@ -23,7 +23,7 @@ public class SinglePlayer extends SampleGamer {
 	public StateMachine stateMachine;
 	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
-	public HashMap<Integer, CacheNode> cache;
+	public HashMap<MachineState, CacheNode> cache;
 	//public ArrayList<Move> worstPath;
 	public int bestValue = 0;
     public int worstValue =100;
@@ -65,7 +65,7 @@ public class SinglePlayer extends SampleGamer {
             //solve assuming multiplayer
 
             //search via minimax iterative deepening
-        	cache = new HashMap<Integer, CacheNode>();
+        	cache = new HashMap<MachineState, CacheNode>();
             ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
             int i = 1;
             while(timeout - 500 > System.currentTimeMillis())
@@ -130,12 +130,12 @@ public class SinglePlayer extends SampleGamer {
 			if(cache != null)
 			{
 				//System.out.println("Cache exists");
-				if(cache.get(node.hashCode()) != null)
+				if(cache.get(node) != null)
 				{
-					CacheNode cacheNode = cache.get(node.hashCode());
-					if(cacheNode.node == node)
+					CacheNode cacheNode = cache.get(node);
+					if(cacheNode.node == node && cacheNode.bestValue >= 50)
 					{
-						System.out.println("Best move " + cacheNode.bestMove);
+						System.out.println("Best move " + cacheNode.bestMove + " " + cacheNode.bestValue);
 						return cacheNode.bestMove;
 					}
 				}
@@ -145,10 +145,10 @@ public class SinglePlayer extends SampleGamer {
 	            	maxi(node, i, new ArrayList<Move>());
 	            	i++;
 	            }
-				CacheNode searchCacheNode = cache.get(node.hashCode());
+				CacheNode searchCacheNode = cache.get(node);
 				if(searchCacheNode != null && searchCacheNode.node == node)
 				{
-					System.out.println("Best Move " + searchCacheNode.bestMove);
+					System.out.println("Best Move searchCacheNode " + searchCacheNode.bestMove);
 					return searchCacheNode.bestMove;
 				}
 				else
@@ -174,7 +174,7 @@ public class SinglePlayer extends SampleGamer {
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
-			System.out.println("Stop");
+			//System.out.println("Stop");
 			return -1;
 		}
 		if(isSolved())
@@ -188,7 +188,7 @@ public class SinglePlayer extends SampleGamer {
             //TODO:return value of node for this path
             //TODO:think about this, does it already happen in data structure
 			//System.out.println("Already Checked");
-			CacheNode cacheNode = cache.get(node.hashCode());
+			CacheNode cacheNode = cache.get(node);
 			if(cacheNode.node == node)
 			{
 				return cacheNode.bestValue;
@@ -198,10 +198,10 @@ public class SinglePlayer extends SampleGamer {
 		}
 		if(stateMachine.isTerminal(node))
 		{
-			System.out.println("Found Terminal ");
-			cache.put(node.hashCode(), new CacheNode(bestValue, 1000000000, null, node)); //this is a terminal state so no moves are possible
+			//System.out.println("Found Terminal ");
+			cache.put(node, new CacheNode(bestValue, 1000000000, null, node)); //this is a terminal state so no moves are possible
 																							//so null works as an optimal move
-			System.out.println("made infinite depth cache entry");
+			//System.out.println("made infinite depth cache entry");
 			return evaluate(node, movesMade);
 
 		}
@@ -209,7 +209,7 @@ public class SinglePlayer extends SampleGamer {
 		if (depth == 0)
 		{
 			//System.out.println("MaxDepth reached");
-			CacheNode cacheNode = cache.get(node.hashCode());
+			CacheNode cacheNode = cache.get(node);
 			if(cacheNode != null && cacheNode.node == node)
 			{
 				return cacheNode.bestValue;
@@ -235,7 +235,7 @@ public class SinglePlayer extends SampleGamer {
 			}
 
 			//System.out.println("Node before caching " + node);
-			cache.put(node.hashCode(), new CacheNode(currBestValue, depth , currBestMove, node));
+			cache.put(node, new CacheNode(currBestValue, depth , currBestMove, node));
 			//System.out.println("Node after caching " + new CacheNode(currBestValue, depth , currBestMove, node).node);
 			return currBestValue;
 		}
@@ -251,9 +251,7 @@ public class SinglePlayer extends SampleGamer {
     public int mini(MachineState node,Move ourMove, int depth,ArrayList<Move> movesMade)
     {
         List<List<Move>> legalMoves;
-
 		try {
-
 			//vinna með worstValue locally og geyma move meðan við tékkum hvort það sé verra en versta so far.
 			//síðan halda áfram?
 			legalMoves = stateMachine.getLegalJointMoves(node, getRole(),ourMove);
@@ -359,7 +357,7 @@ public class SinglePlayer extends SampleGamer {
 		}
 		else
 		{
-			CacheNode tmp = cache.get(node.hashCode());
+			CacheNode tmp = cache.get(node);
 			if(tmp != null && tmp.node == node && tmp.depth >= depth)
 			{
 				return true;
@@ -394,7 +392,7 @@ public class SinglePlayer extends SampleGamer {
 		else
 		{
 			try{
-				System.out.println(stateMachine.getGoal(node, getRole()));
+				//System.out.println(stateMachine.getGoal(node, getRole()));
 				return stateMachine.getGoal(node, getRole());
 			}catch (Exception e){
 				System.out.println("State should be terminal, but no defined goal");
@@ -411,10 +409,6 @@ public class SinglePlayer extends SampleGamer {
 	{
 		return bestValue == 100;
 	}
-
-
-
-
 
 
 }
