@@ -1,6 +1,7 @@
 package org.ggp.base.player.gamer.statemachine;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.MachineState;
@@ -47,8 +48,8 @@ public class SinglePlayer extends SampleGamer {
 		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
 
-                if(singlePlayerMode)
-                {
+        if(singlePlayerMode)
+        {
 
 		    //lista/array af MachineStates sem eru þau state sem við erum búin að heimsækja
 		    ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
@@ -56,25 +57,19 @@ public class SinglePlayer extends SampleGamer {
 		    //Let the search begin
 		    explore(start, 0, 1, noMoves);
 		    System.out.println("Time taken for search " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
-                }
-                else
-                {
-                    ourRoleIndex=stateMachine.getRoleIndices().get(getRole());
+		        }
+        else
+        {
+            //solve assuming multiplayer
 
-                    //solve assuming multiplayer
-<<<<<<< HEAD
-                    //search via minimax iterative deepening
-                    maxrole=getRole();
-                    
-		    ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
+            //search via minimax iterative deepening
+            //maxrole = getRole();
 
-                    minimax(start,0,1,noMoves,true);
+            ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
 
-                    
-=======
-
->>>>>>> 4ec3adbee799c5756de36ef1baad225c0a9862e9
-                }
+            //minimax(start,0,1,noMoves,true);
+            maxi(start, 0, 1, noMoves);
+        }
 	}
 
 	/*
@@ -119,15 +114,12 @@ public class SinglePlayer extends SampleGamer {
 			Move nextMove = bestPath.get(moveCount);
 			moveCount++;
 			return nextMove;
-
 		}
-
-
 	}
-        
-        public void maxi(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
+
+    public void maxi(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
-                
+
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
@@ -142,8 +134,8 @@ public class SinglePlayer extends SampleGamer {
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node))
 		{
-                        //TODO:return value of node for this path
-                        //TODO:think about this, does it already happen in data structure
+            //TODO:return value of node for this path
+            //TODO:think about this, does it already happen in data structure
 			//System.out.println("Already Checked");
 			return;
 		}
@@ -160,13 +152,13 @@ public class SinglePlayer extends SampleGamer {
 		}
 
 
-                State.add(node.hashCode());
+        visitedState.add(node.hashCode());
 		try{
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
 				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
 				childMove.add(child);
-				mini(node, nextMove, depth+1, maxDepth, childMove);
+				mini(node, child, depth+1, maxDepth, childMove);
 			}
 		}
 		catch(Exception e){
@@ -175,10 +167,10 @@ public class SinglePlayer extends SampleGamer {
 
 		}
 
-		// Depth = 0 is the root 
+		// Depth = 0 is the root
 		if(depth == 0)
 		{
-                        //increment depth and start again for iterative deepening
+            //increment depth and start again for iterative deepening
 			//System.out.println("depth == 0");
 			maxDepth++;
 			//System.out.println("Max depth:" + maxDepth);
@@ -186,22 +178,21 @@ public class SinglePlayer extends SampleGamer {
 			ArrayList<Move> noMoves = new ArrayList<Move>();
 			maxi(node, 0, maxDepth, noMoves);
 		}
-                
+
 	}
-
-
-        public void mini(Machinestate node,Move ourMove, int depth, int maxdepth,ArrayList<Move> movesMade)
-        {
-            
-            ArrayList<List<Move>> legalMoves= stateMachine.getlegalJointMoves(getRole(),ourMove);
-            for(List<Move> moveSet:legalMoves)
-            {
-                ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
-                childMove.add(child);
-		maxi(stateMachine.getNextState(node, moveSet), depth+1, maxDepth, childMove);
-            }
-
-        }
+    public void mini(MachineState node,Move ourMove, int depth, int maxDepth,ArrayList<Move> movesMade)
+    {
+        List<List<Move>> legalMoves;
+		try {
+			legalMoves = stateMachine.getLegalJointMoves(node, getRole(),ourMove);
+			for(List<Move> moveSet:legalMoves)
+	        {
+	            maxi(stateMachine.getNextState(node, moveSet), depth+1, maxDepth, movesMade);
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
 	/*
 	 * If you want, you can override the
 	 * stateMachineStop method to do something when the game is over.
@@ -214,7 +205,7 @@ public class SinglePlayer extends SampleGamer {
 	 */
 
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
-	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade,Role maxrole)
+	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
