@@ -29,12 +29,12 @@ public class SinglePlayer extends SampleGamer {
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-                
+
 		long startTime = System.currentTimeMillis();
 		stopTime = timeout - 500;
 		stateMachine = getStateMachine();
                 //check whether to play as single player game or not
-                if(stateMachine.getroles().size()==1)
+                if(stateMachine.getRoles().size()==1)
                     singlePlayerMode=true;
                 else
                     singlePlayerMode=false;
@@ -49,7 +49,7 @@ public class SinglePlayer extends SampleGamer {
 
 		    //lista/array af MachineStates sem eru þau state sem við erum búin að heimsækja
 		    ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
-    
+
 		    //Let the search begin
 		    explore(start, 0, 1, noMoves);
 		    System.out.println("Time taken for search " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
@@ -57,7 +57,7 @@ public class SinglePlayer extends SampleGamer {
                 else
                 {
                     //solve assuming multiplayer
-                    
+
                 }
 	}
 
