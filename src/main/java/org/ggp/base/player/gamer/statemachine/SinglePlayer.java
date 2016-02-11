@@ -185,6 +185,8 @@ public class SinglePlayer extends SampleGamer {
     {
         List<List<Move>> legalMoves;
 		try {
+			//vinna með worstValue locally og geyma move meðan við tékkum hvort það sé verra en versta so far.
+			//síðan halda áfram?
 			legalMoves = stateMachine.getLegalJointMoves(node, getRole(),ourMove);
 			for(List<Move> moveSet:legalMoves)
 	        {
