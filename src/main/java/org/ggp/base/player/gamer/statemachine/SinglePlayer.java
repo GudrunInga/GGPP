@@ -180,6 +180,7 @@ public class SinglePlayer extends SampleGamer {
 		}
 
 	}
+    // Bæta við að velja frekar minimizing moves
     public void mini(MachineState node,Move ourMove, int depth, int maxDepth,ArrayList<Move> movesMade)
     {
         List<List<Move>> legalMoves;
