@@ -30,6 +30,10 @@ public class SinglePlayer extends SampleGamer {
 	public int moveCount = 0;
 	public long stopTime;
     public boolean singlePlayerMode;
+    //documents the highest variety of different moves 
+    //available at any single state yet discovered, used to normalise
+    //mobility value function
+    public int mostmoves=1;
 
 
 	@Override
@@ -221,6 +225,9 @@ public class SinglePlayer extends SampleGamer {
         //visitedState.add(node.hashCode());
 		try{
 			int currBestValue = 0;
+
+                        
+                        mostmoves =  max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
 			Move currBestMove = stateMachine.getLegalMoves(node, getRole()).get(0);
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
@@ -320,6 +327,7 @@ public class SinglePlayer extends SampleGamer {
 		//System.out.println("I should get here!!!!!");
 		visitedState.add(node.hashCode());
 		try{
+                        mostmoves =  max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
 				ArrayList<Move> nextMove = new ArrayList<Move>();
@@ -411,6 +419,29 @@ public class SinglePlayer extends SampleGamer {
 	{
 		return bestValue == 100;
 	}
+
+        //mobility based evaluation function
+        //returns value in the range [0;100] representing
+        //how many options the player has in this node compared to others
+        public int mobilityValue(role,state)
+        {
+            //while search is running, keep track of most legal moves found in any single node,
+            //use this to create a scalable ratio representing the mobility in a given state
+            return 100*stateMachine.getLegalMoves(state,role)/mostmoves;
+        }
+
+
+
+        //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this
+        //will be a relatively low value, so it may diminish by comparison once we find reasonable terminal states
+        //this is approximated as the the ratio
+        //returns value in the range [0;100] representing how large a piece of the branching factor at this node is attributable to this player,
+        //which gives an interesting heuristic for how much control our player has over the current state of the game.
+        public int rationalḾobilityValue(role,state)
+        {
+            return 100*stateMachine.getLegalMoves(state,role)/stateMachine.getLegalJointMoves(state);
+        }
+            
 
 
 
