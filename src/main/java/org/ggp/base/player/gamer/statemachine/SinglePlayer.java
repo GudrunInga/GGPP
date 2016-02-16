@@ -23,7 +23,7 @@ public class SinglePlayer extends SampleGamer {
 	public StateMachine stateMachine;
 	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
-	public HashMap<MachineState, CacheNode> cache; //minmax transposition table
+	public HashMap<MachineState, CacheNode> cache; //minmax transposition table // change state to have softreference apache.org. Another way is to create array e.g. Pair<State, Value>[State.hashCode()%N] of size N gives us more power if to replace the new value with the old value.
 	public int bestValue = 0;
     public int worstValue =100; // minmax
 	public int moveCount = 0;
@@ -300,6 +300,7 @@ public class SinglePlayer extends SampleGamer {
 	}
 	 */
 
+    // limit the transposition table size so it
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{

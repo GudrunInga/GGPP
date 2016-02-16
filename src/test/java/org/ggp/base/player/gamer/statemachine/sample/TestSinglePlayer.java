@@ -50,12 +50,13 @@ public class TestSinglePlayer extends Assert {
 		assertTrue(s.getRoleName().toString() == "xplayer");
 		assertTrue(r.getRoleName().toString() == "oplayer");
 
+		while(!m.isCompleted()){}
 		if(m.isCompleted())
 		{
 			assertTrue(s.bestValue >= 50);
-
-
 		}
+		else
+			System.out.println("this should never print");
 
 	}
 
