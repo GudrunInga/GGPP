@@ -34,9 +34,15 @@ public class SinglePlayer extends SampleGamer {
 // Check if your implementation is correct by running the tests.
 
 	public StateMachine stateMachine;
+<<<<<<< HEAD
+        //root of the part of the tree we are currently searching
+        public MachineState searchRoot;
+	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
+=======
 	//public ArrayList<MachineState> visitedState = new ArrayList<MachineState>(); // States that have already been visited, don't need to check those again
 	public HashMap<Integer , MachineState> visitedState = new HashMap<Integer, MachineState>();
 
+>>>>>>> 43576b77077f3925aca83d054cc1fdd9b0d69982
 	public ArrayList<Move> bestPath;
 	public HashMap<MachineState, CacheNode> cache; //minmax transposition table // change state to have softreference apache.org. Another way is to create array e.g. Pair<State, Value>[State.hashCode()%N] of size N gives us more power if to replace the new value with the old value.
 	public int bestValue = 0;
@@ -66,7 +72,7 @@ public class SinglePlayer extends SampleGamer {
 		moveCount = 0;
 		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
-                searchRoot=start;
+                searchRott=start;
 
         if(singlePlayerMode)
         {
@@ -120,7 +126,7 @@ public class SinglePlayer extends SampleGamer {
 			if(!isSolved())
 			{
 				MachineState currState = getCurrentState();
-                                searchRoot=currState;
+                                searchroot=currState;
 
 				/*if(bestPath != null)
 				{
@@ -336,7 +342,6 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Stop");
 			return;
 		}
-		
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node, depth))
 		{
@@ -511,7 +516,7 @@ public class SinglePlayer extends SampleGamer {
     //Bad because changing the game state can happen if you throw away your own pieces
 
 
-          //compares the number of statements that are true in the root of part of the
+        //compares the number of statements that are true in the root of part of the
         //game tree that is currently being searched and the node to be evaluated
         //returns the ratio of statements in the larger set of statements that is also
         //in the smaller set of statements in percentages (so range is [0;100]
@@ -541,6 +546,11 @@ public class SinglePlayer extends SampleGamer {
                     
                 return (int)(score/(float)rootContents.size());
             }
+
+
+        }
+
+
 
 
 

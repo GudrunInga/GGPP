@@ -66,7 +66,6 @@ public class SinglePlayer extends SampleGamer {
 		moveCount = 0;
 		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
-                searchRoot=start;
 
         if(singlePlayerMode)
         {
@@ -120,7 +119,6 @@ public class SinglePlayer extends SampleGamer {
 			if(!isSolved())
 			{
 				MachineState currState = getCurrentState();
-                                searchRoot=currState;
 
 				/*if(bestPath != null)
 				{
@@ -336,7 +334,6 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Stop");
 			return;
 		}
-		
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node, depth))
 		{
@@ -511,36 +508,7 @@ public class SinglePlayer extends SampleGamer {
     //Bad because changing the game state can happen if you throw away your own pieces
 
 
-          //compares the number of statements that are true in the root of part of the
-        //game tree that is currently being searched and the node to be evaluated
-        //returns the ratio of statements in the larger set of statements that is also
-        //in the smaller set of statements in percentages (so range is [0;100]
-        public int noveltyValue(role,state)
-        {
-            Set<GdlSentence> rootContents = searchRoot.getContents();
-            Set<GdlSentence> stateContents = state.getContents();
 
-            if(rootContents.size()<stateContents.size())
-            {
-                int score=0;
-                for(GdlSentence sent : stateContents)
-                {
-                    if (rootContents.contains(sent))
-                        score++;
-                }
-                return (int)(score/(float)stateContents.size());
-            }
-            else
-            {
-                int score=0;
-                for(GdlSentence sent : rootContents)
-                {
-                    if (stateContents.contains(sent))
-                        score++;
-                }
-                    
-                return (int)(score/(float)rootContents.size());
-            }
 
 
 
