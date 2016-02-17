@@ -21,6 +21,8 @@ public class SinglePlayer extends SampleGamer {
 // Check if your implementation is correct by running the tests.
 
 	public StateMachine stateMachine;
+        //root of the part of the tree we are currently searching
+        public MachineState searchRoot;
 	public ArrayList<Integer> visitedState = new ArrayList<Integer>(); // States that have already been visited, don't need to check those again
 	public ArrayList<Move> bestPath;
 	public HashMap<MachineState, CacheNode> cache; //minmax transposition table // change state to have softreference apache.org. Another way is to create array e.g. Pair<State, Value>[State.hashCode()%N] of size N gives us more power if to replace the new value with the old value.
@@ -51,6 +53,7 @@ public class SinglePlayer extends SampleGamer {
 		moveCount = 0;
 		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
+                searchRott=start;
 
         if(singlePlayerMode)
         {
@@ -104,6 +107,7 @@ public class SinglePlayer extends SampleGamer {
 			if(!isSolved())
 			{
 				MachineState currState = getCurrentState();
+                                searchroot=currState;
 
 				if(bestPath != null)
 				{
@@ -445,6 +449,40 @@ public class SinglePlayer extends SampleGamer {
             return 100*stateMachine.getLegalMoves(state,role)/mostmoves;
         }
 
+
+        //compares the number of statements that are true in the root of part of the
+        //game tree that is currently being searched and the node to be evaluated
+        //returns the ratio of statements in the larger set of statements that is also
+        //in the smaller set of statements in percentages (so range is [0;100]
+        public int noveltyValue(role,state)
+        {
+            Set<GdlSentence> rootContents = searchRoot.getContents();
+            Set<GdlSentence> stateContents = state.getContents();
+
+            if(rootContents.size()<stateContents.size())
+            {
+                int score=0;
+                for(GdlSentence sent : stateContents)
+                {
+                    if (rootContents.contains(sent))
+                        score++;
+                }
+                return (int)(score/(float)stateContents.size());
+            }
+            else
+            {
+                int score=0;
+                for(GdlSentence sent : rootContents)
+                {
+                    if (stateContents.contains(sent))
+                        score++;
+                }
+                    
+                return (int)(score/(float)rootContents.size());
+            }
+
+
+        }
 
 
         //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this
