@@ -115,9 +115,9 @@ public class SinglePlayer extends SampleGamer {
 				//System.out.println(System.currentTimeMillis()); //Output the time it took to search
 
 			}
-			if (bestPath == null)
+			if (bestPath == null || bestPath.size() <= moveCount)
 			{
-				//System.out.println("We are in getRandomMove!!!!!");
+				System.out.println("We are in getRandomMove!!!!!");
 				return stateMachine.getRandomMove(getCurrentState(), getRole());
 			}
 			else
@@ -304,15 +304,11 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
+		System.out.println("We are at " + depth);
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
 			//System.out.println("Stop");
-			return;
-		}
-		if(isSolved())
-		{
-			//System.out.println("Is Solved");
 			return;
 		}
 		// Geymir best path, breytir ef finnur nýtt best path
@@ -325,6 +321,12 @@ public class SinglePlayer extends SampleGamer {
 		{
 			//System.out.println("Found Terminal");
 			evaluate(node, movesMade);
+			return;
+		}
+		if(isSolved())
+		{
+			//System.out.println("Is Solved");
+			return;
 		}
 
 		if (depth == maxDepth)
@@ -345,8 +347,13 @@ public class SinglePlayer extends SampleGamer {
 			}
 		}
 		catch(Exception e){
-			System.out.println(e);
+			//System.out.println(e);
 			System.out.println("Either no successor state or no legal moves");
+			if(stateMachine.isTerminal(node))
+			{
+				System.out.println("There are no legal moves because we have reached end of game");
+				return;
+			}
 
 		}
 
