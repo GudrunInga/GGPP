@@ -51,13 +51,11 @@ public class SinglePlayer extends SampleGamer {
     public int mostmoves=1;
     public MachineState searchRoot;
 
-
-
     //evaluation mode
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "mobility";
+    public String mode = "mobilityd";
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
@@ -377,19 +375,19 @@ public class SinglePlayer extends SampleGamer {
 		if (depth == maxDepth)
 		{
 			//System.out.println("MaxDepth reached");
-                        //reached leaf node of current iterative search, apply
-                        //heuristic evaluation
-                        int nodeValue = heuristicValue(getRole(),node);
-                        if(nodeValue>bestValue)
-                        {
-                            //if heuristic exceeds current best plan, replace it
-                            //explore is called on searchroot, so movecount must
-                            //be made 0 when bestpath is changed
-                            bestValue=nodeValue;
-                            bestPath=movesMade;
-                            moveCount=0;
+            //reached leaf node of current iterative search, apply
+            //heuristic evaluation
+            int nodeValue = heuristicValue(getRole(),node);
+            if(nodeValue>bestValue)
+            {
+                //if heuristic exceeds current best plan, replace it
+                //explore is called on searchroot, so movecount must
+                //be made 0 when bestpath is changed
+                bestValue=nodeValue;
+                bestPath=movesMade;
+                moveCount=0;
 
-                        }
+            }
 			return;
 		}
 		//System.out.println("I should get here!!!!!");
@@ -591,7 +589,7 @@ public class SinglePlayer extends SampleGamer {
     //How many of the goal rules are in the state rules.
     public int goalDistance(Role role, MachineState state)
     {
-    	List<Gdl> rules = this.getMatch().getGame().getRules();
+    	List<Gdl> rules = this.getMatch().getGame().getRules(); //Get all rules of the game
 		KnowledgeBase kb = new KnowledgeBase(Sets.newHashSet(rules));
 		GdlTerm[] goalArguments = {getRoleName(), GdlPool.getConstant("100")};
 		GdlSentence goalSentence = GdlPool.getRelation(GdlPool.GOAL, goalArguments);
@@ -603,7 +601,7 @@ public class SinglePlayer extends SampleGamer {
 				// use the substitution on the rule before looking at the body
 				rule = Substituter.substitute(rule, s);
 				double score = 0;
-				//System.out.println(rule + "    " + rule.getBody() + "     ");
+
 				for (GdlLiteral literal : rule.getBody()) {
 					// TODO: process the rule body
 					// For example, if the literal is something of the form (true ?x) then
@@ -611,14 +609,11 @@ public class SinglePlayer extends SampleGamer {
 
 					for(GdlLiteral lit : state.getContents())
 					{
-						//System.out.println(literal + "     " + lit;
 						if(lit.equals(literal))
 						{
-							//System.out.println(literal + "     " + lit);
 							score++;
 						}
 					}
-
 				}
 				if((score/rule.getBody().size()) > bestScore)
 				{
