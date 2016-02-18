@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -48,7 +49,7 @@ public class SinglePlayer extends SampleGamer {
     //available at any single state yet discovered, used to normalise
     //mobility value function
     public int mostmoves=1;
-
+    public MachineState searchRoot;
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
@@ -66,7 +67,7 @@ public class SinglePlayer extends SampleGamer {
 		moveCount = 0;
 		//Begin getting the initial state (root)
 		MachineState start = stateMachine.getInitialState();
-                searchRoot=start;
+         searchRoot=start;
 
         if(singlePlayerMode)
         {
@@ -336,7 +337,7 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Stop");
 			return;
 		}
-		
+
 		// Geymir best path, breytir ef finnur nýtt best path
 		if(isChecked(node, depth))
 		{
@@ -515,7 +516,7 @@ public class SinglePlayer extends SampleGamer {
         //game tree that is currently being searched and the node to be evaluated
         //returns the ratio of statements in the larger set of statements that is also
         //in the smaller set of statements in percentages (so range is [0;100]
-        public int noveltyValue(role,state)
+        public int noveltyValue(Role role, MachineState state)
         {
             Set<GdlSentence> rootContents = searchRoot.getContents();
             Set<GdlSentence> stateContents = state.getContents();
@@ -538,9 +539,10 @@ public class SinglePlayer extends SampleGamer {
                     if (stateContents.contains(sent))
                         score++;
                 }
-                    
+
                 return (int)(score/(float)rootContents.size());
             }
+        }
 
 
 
