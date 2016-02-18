@@ -51,14 +51,6 @@ public class SinglePlayer extends SampleGamer {
     public int mostmoves=1;
     public MachineState searchRoot;
 
-
-
-    //evaluation mode
-    //currently, can be set to "mobility", "novelty", "goal distance"
-    //which will cause the player to use the corresponding goal heuristic
-    //if the string is anything other, we will use goal distance value
-    public String mode = "mobility"
-
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
@@ -140,7 +132,6 @@ public class SinglePlayer extends SampleGamer {
 						currState = stateMachine.getNextState(currState, nextMove);
 					}
 				}*/
-
 				//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
 				explore(currState, 0, 1, new ArrayList<Move>());
 				//System.out.println(System.currentTimeMillis()); //Output the time it took to search
@@ -250,18 +241,16 @@ public class SinglePlayer extends SampleGamer {
 			return tmp;
 
 		}
-
 		if (depth == 0)
 		{
 			//System.out.println("MaxDepth reached");
 			CacheNode cacheNode = cache.get(node);
-			if(cacheNode != null && cacheNode.node == node&&cacheNode.bestValue!=0)
+			if(cacheNode != null && cacheNode.node == node)
 			{
 				return cacheNode.bestValue;
 			}
-                        //when we bottom out, if we do not have a stored (positive)
-                        //value, we want to return our hueristic estimate of it's value
-			return hueristicValue(getRole(),node); //WTF happened?
+			//System.out.println("if depth == 0, should not get to this return statement");
+			return 0; //WTF happened?
 		}
 
         //visitedState.add(node.hashCode());
@@ -339,6 +328,7 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
+<<<<<<< HEAD
                 for(int i=0;i<depth;i++)
                 {
                     System.out.print(" ");
@@ -346,6 +336,8 @@ public class SinglePlayer extends SampleGamer {
                 System.out.println(depth);
 
 
+=======
+>>>>>>> 5d2294c23ba93d6270f0907776b24dccdfaaadea
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
@@ -617,24 +609,5 @@ public class SinglePlayer extends SampleGamer {
 		}
 		//System.out.println("The best score " + bestScore);
 		return (int)(100*bestScore);
-    }
-
-
-    public int hueristicValue(Role role,MachineState state)
-    {
-        if(mode.equals("mobility")
-        {
-            return mobilityValue(role,state);
-        }
-        else if(mode.equals("novelty")
-        {
-            return noveltyValue(role,state);
-        }
-        else(mode.equals("goal distance"))
-        {
-            return goaldDistance(role,state);
-        }
-
-        
     }
 }
