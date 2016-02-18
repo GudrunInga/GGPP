@@ -242,7 +242,6 @@ public class SinglePlayer extends SampleGamer {
 			return tmp;
 
 		}
-
 		if (depth == 0)
 		{
 			//System.out.println("MaxDepth reached");
@@ -259,7 +258,7 @@ public class SinglePlayer extends SampleGamer {
 		try{
 			int currBestValue = 0;
 
-
+            //this is just bookkeeping for the novelty evalutation
             mostmoves =  Math.max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
 			Move currBestMove = stateMachine.getLegalMoves(node, getRole()).get(0);
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
@@ -330,6 +329,12 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
 	{
+                for(int i=0;i<depth;i++)
+                {
+                    System.out.print(" ");
+                }
+                System.out.println(depth);
+
 
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
@@ -543,6 +548,7 @@ public class SinglePlayer extends SampleGamer {
                 return (int)(score/(float)rootContents.size());
             }
         }
+
 
 
 
