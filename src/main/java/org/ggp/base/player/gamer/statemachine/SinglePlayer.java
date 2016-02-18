@@ -36,7 +36,7 @@ public class SinglePlayer extends SampleGamer {
 
 	public StateMachine stateMachine;
 	//public ArrayList<MachineState> visitedState = new ArrayList<MachineState>(); // States that have already been visited, don't need to check those again
-	public HashMap<Integer , MachineState> visitedState = new HashMap<Integer, MachineState>();
+	public HashMap<MachineState, CacheNode> visitedState = new HashMap<MachineState, CacheNode>();
 
 	public ArrayList<Move> bestPath;
 	public HashMap<MachineState, CacheNode> cache; //minmax transposition table // change state to have softreference apache.org. Another way is to create array e.g. Pair<State, Value>[State.hashCode()%N] of size N gives us more power if to replace the new value with the old value.
@@ -132,7 +132,7 @@ public class SinglePlayer extends SampleGamer {
 						currState = stateMachine.getNextState(currState, nextMove);
 					}
 				}*/
-				visitedState = new HashMap<Integer, MachineState>();
+
 				//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
 				explore(currState, 0, 1, new ArrayList<Move>());
 				//System.out.println(System.currentTimeMillis()); //Output the time it took to search
@@ -242,6 +242,7 @@ public class SinglePlayer extends SampleGamer {
 			return tmp;
 
 		}
+
 		if (depth == 0)
 		{
 			//System.out.println("MaxDepth reached");
@@ -355,7 +356,7 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Found Terminal");
 			//System.out.println("We are at " + depth);
 			evaluate(node, movesMade);
-			visitedState.put(node.hashCode(), node);// add(node.hashCode()); //.hashCode());
+			visitedState.put(node, new CacheNode(bestValue, depth, null, node));// add(node.hashCode()); //.hashCode());
 			return;
 		}
 		if(isSolved())
@@ -370,9 +371,9 @@ public class SinglePlayer extends SampleGamer {
 			return;
 		}
 		//System.out.println("I should get here!!!!!");
-		visitedState.put(node.hashCode(), node);//add(node); //.hashCode());
+		visitedState.put(node, new CacheNode(bestValue, depth, null, node));//add(node); //.hashCode());
 		try{
-            //mostmoves =  Math.max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
+            mostmoves =  Math.max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
 				ArrayList<Move> nextMove = new ArrayList<Move>();
@@ -398,7 +399,7 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("depth == 0");
 			maxDepth++;
 			//System.out.println("Max depth:" + maxDepth);
-			visitedState = new HashMap<Integer, MachineState>(); //new ArrayList<MachineState>();
+			visitedState = new HashMap<MachineState, CacheNode>(); //new ArrayList<MachineState>();
 			ArrayList<Move> noMoves = new ArrayList<Move>();
 			explore(node, 0, maxDepth, noMoves);
 		}
@@ -409,7 +410,7 @@ public class SinglePlayer extends SampleGamer {
 		//return true if node has been visited
 		if(singlePlayerMode)
 		{
-			if(visitedState.containsKey(node.hashCode()) && visitedState.get(node.hashCode()) == node)//contains(node)) //.hashCode()))
+			if(visitedState.containsKey(node.hashCode()))//contains(node)) //.hashCode()))
 			{
 				return true;
 			}
@@ -564,6 +565,8 @@ public class SinglePlayer extends SampleGamer {
     //in many games the goal values are indeed monotonoic, meaning that values do increase
     //with proximity to the goal. Moreover, it is sometimes possible to compute this by a
     //simple examination of the game description.
+
+    //How many of the goal rules are in the state rules.
     public int goalDistance(Role role, MachineState state)
     {
     	List<Gdl> rules = this.getMatch().getGame().getRules();
@@ -571,33 +574,39 @@ public class SinglePlayer extends SampleGamer {
 		GdlTerm[] goalArguments = {getRoleName(), GdlPool.getConstant("100")};
 		GdlSentence goalSentence = GdlPool.getRelation(GdlPool.GOAL, goalArguments);
 		List<GdlRule> goalRules = kb.fetch(goalSentence);
-		int count = 0;
+		double bestScore = 0;
 		for(GdlRule rule : goalRules) {
 			Substitution s = Unifier.unify(rule.getHead(), goalSentence);
 			if (s != null) { // found rule who's head matches goal(myrole,100)
 				// use the substitution on the rule before looking at the body
 				rule = Substituter.substitute(rule, s);
+				double score = 0;
+				//System.out.println(rule + "    " + rule.getBody() + "     ");
 				for (GdlLiteral literal : rule.getBody()) {
 					// TODO: process the rule body
 					// For example, if the literal is something of the form (true ?x) then
 					// try to match it to the current state.
-					int l = 0;
+
 					for(GdlLiteral lit : state.getContents())
 					{
-						if(literal == lit)
+						//System.out.println(literal + "     " + lit;
+						if(lit.equals(literal))
 						{
-							l++;
+							//System.out.println(literal + "     " + lit);
+							score++;
 						}
 					}
-					if(l > count)
-					{
-						count = l;
-					}
-					System.out.println(literal);
+
+				}
+				if((score/rule.getBody().size()) > bestScore)
+				{
+					//System.out.println("l > count");
+					bestScore = score/rule.getBody().size();
 				}
 
 			}
 		}
-		return 0;
+		//System.out.println("The best score " + bestScore);
+		return (int)(100*bestScore);
     }
 }
