@@ -56,7 +56,7 @@ public class SinglePlayer extends SampleGamer {
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "mobility";
+    public String mode = "novelty";
 
 
 	@Override
@@ -133,6 +133,7 @@ public class SinglePlayer extends SampleGamer {
 			GoalDefinitionException {
 
 		stopTime = timeout - 500;
+		//long startTime = System.currentTimeMillis();
 		if(singlePlayerMode)
 		{
 			if(!isSolved())
@@ -151,11 +152,13 @@ public class SinglePlayer extends SampleGamer {
 				}*/
 
 				//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
-				try {
+				//Taken out until stackoverflow fixed
+                /*try {
 					explore(currState, 0, 1, new ArrayList<Move>());
 				} catch (TimeoutException e) {
-					System.out.println(System.currentTimeMillis()); //Output the time it took to search
-				}
+
+				}*/
+				//System.out.println("Play time " + (System.currentTimeMillis()-startTime)); //Output the time it took to search
 
 			}
 			if (bestPath == null || bestPath.size() <= moveCount)
@@ -351,6 +354,7 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade) throws TimeoutException
 	{
+				//For debugging
                 /*for(int i=0;i<depth;i++)
                 {
                     System.out.print(" ");
@@ -419,8 +423,8 @@ public class SinglePlayer extends SampleGamer {
 			}
 		}
 		catch(Exception e){
-			//System.out.println(e);
-			System.out.println("Either no successor state or no legal moves");
+			System.out.println(e);
+			//System.out.println("Either no successor state or no legal moves");
 			if(stateMachine.isTerminal(node))
 			{
 				System.out.println("There are no legal moves because we have reached end of game");
@@ -519,8 +523,8 @@ public class SinglePlayer extends SampleGamer {
 		} catch (MoveDefinitionException e) {
 			System.err.println("No legal moves");
 		}
-
-        return (int)(100*size/(2*mostmoves));
+    	//System.out.println(mostmoves + "   " + size);
+        return (int)(100*(size/(2*mostmoves)));
     }
 
     //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this
