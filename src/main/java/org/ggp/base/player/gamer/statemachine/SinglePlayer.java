@@ -377,6 +377,19 @@ public class SinglePlayer extends SampleGamer {
 		if (depth == maxDepth)
 		{
 			//System.out.println("MaxDepth reached");
+                        //reached leaf node of current iterative search, apply
+                        //heuristic evaluation
+                        int nodeValue=heuristicValue(getRole,node);
+                        if(nodevalue>bestValue)
+                        {
+                            //if heuristic exceeds current best plan, replace it
+                            //explore is called on searchroot, so movecount must
+                            //be made 0 when bestpath is changed
+                            bestValue=nodeValue;
+                            bestPath=movesMade;
+                            moveCount=0;
+
+                        }
 			return;
 		}
 		//System.out.println("I should get here!!!!!");
