@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -55,12 +56,19 @@ public class SinglePlayer extends SampleGamer {
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "mobilityd";
+    public String mode = "mobility";
+
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+		//bestValue = 0;
+	    worstValue =100; // minmax
+		//moveCount = 0;
+		mostmoves=1;
+
 		long startTime = System.currentTimeMillis();
+
 		stopTime = timeout - 500;
 		stateMachine = getStateMachine();
         //check whether to play as single player game or not
@@ -79,10 +87,13 @@ public class SinglePlayer extends SampleGamer {
         {
 		    //lista/array af MachineStates sem eru þau state sem við erum búin að heimsækja
 		    ArrayList<Move> noMoves = new ArrayList<Move>(); // Moves we have made (which here is no moves been made)
-
 		    //Let the search begin
-		    explore(start, 0, 1, noMoves);
+		    try{
+				explore(start, 0, 1, noMoves);
+		    }catch(TimeoutException e){
+		    }
 		    System.out.println("Time taken for search " + (System.currentTimeMillis() - startTime)); //Output the time it took to search
+
 		}
         else
         {
@@ -140,8 +151,11 @@ public class SinglePlayer extends SampleGamer {
 				}*/
 
 				//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
-				explore(currState, 0, 1, new ArrayList<Move>());
-				//System.out.println(System.currentTimeMillis()); //Output the time it took to search
+				try {
+					explore(currState, 0, 1, new ArrayList<Move>());
+				} catch (TimeoutException e) {
+					System.out.println(System.currentTimeMillis()); //Output the time it took to search
+				}
 
 			}
 			if (bestPath == null || bestPath.size() <= moveCount)
@@ -335,20 +349,21 @@ public class SinglePlayer extends SampleGamer {
 
     // limit the transposition table size so it
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
-	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade)
+	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade) throws TimeoutException
 	{
-                for(int i=0;i<depth;i++)
+                /*for(int i=0;i<depth;i++)
                 {
                     System.out.print(" ");
                 }
                 System.out.println(depth);
-
+*/
 
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
 			//System.out.println("Stop");
-			return;
+			throw new TimeoutException();
+			//return;
 		}
 
 		// Geymir best path, breytir ef finnur nýtt best path
@@ -505,7 +520,7 @@ public class SinglePlayer extends SampleGamer {
 			System.err.println("No legal moves");
 		}
 
-        return (int)(100*size/mostmoves);
+        return (int)(100*size/(2*mostmoves));
     }
 
     //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this
