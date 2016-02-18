@@ -57,7 +57,7 @@ public class SinglePlayer extends SampleGamer {
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "mobility"
+    public String mode = "mobility";
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
@@ -261,7 +261,7 @@ public class SinglePlayer extends SampleGamer {
 			}
                         //when we bottom out, if we do not have a stored (positive)
                         //value, we want to return our hueristic estimate of it's value
-			return hueristicValue(getRole(),node); //WTF happened?
+			return heuristicValue(getRole(),node); //WTF happened?
 		}
 
         //visitedState.add(node.hashCode());
@@ -379,8 +379,8 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("MaxDepth reached");
                         //reached leaf node of current iterative search, apply
                         //heuristic evaluation
-                        int nodeValue=heuristicValue(getRole,node);
-                        if(nodevalue>bestValue)
+                        int nodeValue = heuristicValue(getRole(),node);
+                        if(nodeValue>bestValue)
                         {
                             //if heuristic exceeds current best plan, replace it
                             //explore is called on searchroot, so movecount must
@@ -633,21 +633,21 @@ public class SinglePlayer extends SampleGamer {
     }
 
 
-    public int hueristicValue(Role role,MachineState state)
+    public int heuristicValue(Role role,MachineState state)
     {
-        if(mode.equals("mobility")
+        if(mode.equals("mobility"))
         {
             return mobilityValue(role,state);
         }
-        else if(mode.equals("novelty")
+        else if(mode.equals("novelty"))
         {
             return noveltyValue(role,state);
         }
-        else(mode.equals("goal distance"))
+        else //(mode.equals("goal distance"))
         {
-            return goaldDistance(role,state);
+            return goalDistance(role,state);
         }
 
-        
+
     }
 }
