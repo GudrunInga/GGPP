@@ -56,7 +56,7 @@ public class SinglePlayer extends SampleGamer {
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "novelty";
+    public String mode = "mobility";
 
 
 	@Override
@@ -108,7 +108,7 @@ public class SinglePlayer extends SampleGamer {
             {
 
             	//minimax(start,0,1,noMoves,true);
-            	maxi(start, i, noMoves);
+            	maxi(start, i, noMoves, -1, 101);
             	CacheNode node = cache.get(start);
             	if(node.bestValue == 100)
             	{
@@ -133,6 +133,7 @@ public class SinglePlayer extends SampleGamer {
 			GoalDefinitionException {
 
 		stopTime = timeout - 500;
+		//long startTime = System.currentTimeMillis();
 		if(singlePlayerMode)
 		{
 			if(!isSolved())
@@ -151,11 +152,13 @@ public class SinglePlayer extends SampleGamer {
 				}*/
 
 				//System.out.println("We are in SELECTMOVE!--------------------------------------------------------------------------\n");
-				try {
+				//Taken out until stackoverflow fixed
+                /*try {
 					explore(currState, 0, 1, new ArrayList<Move>());
 				} catch (TimeoutException e) {
-					System.out.println(System.currentTimeMillis()); //Output the time it took to search
-				}
+
+				}*/
+				//System.out.println("Play time " + (System.currentTimeMillis()-startTime)); //Output the time it took to search
 
 			}
 			if (bestPath == null || bestPath.size() <= moveCount)
@@ -190,7 +193,7 @@ public class SinglePlayer extends SampleGamer {
 				int i = 1;
 	            while(timeout - 500 > System.currentTimeMillis() )
 	            {
-	            	maxi(node, i, new ArrayList<Move>());
+	            	maxi(node, i, new ArrayList<Move>(), -1, 101);
 	            	CacheNode nodeCheck = cache.get(node);
 	            	if(nodeCheck.bestValue == 100)
 	            	{
@@ -223,8 +226,9 @@ public class SinglePlayer extends SampleGamer {
 		}
 	}
 
-    public int maxi(MachineState node, int depth, ArrayList<Move> movesMade)
+    public int maxi(MachineState node, int depth, ArrayList<Move> movesMade, int alpha, int beta)
 	{
+    	int startAlpha = alpha;
 		//System.out.println("Depth: " + depth + "MaxDepth: " + maxDepth);
 		if(System.currentTimeMillis() >= stopTime)
 		{
@@ -245,7 +249,22 @@ public class SinglePlayer extends SampleGamer {
 			CacheNode cacheNode = cache.get(node);
 			if(cacheNode.node == node)
 			{
-				return cacheNode.bestValue;
+				if(cacheNode.flag == CacheNode.type.exact)
+				{
+					return cacheNode.bestValue;
+				}
+				else if(cacheNode.flag == CacheNode.type.lower)
+				{
+					alpha = Math.max(alpha, cacheNode.bestValue);
+				}
+				else if(cacheNode.flag == CacheNode.type.upper)
+				{
+					beta = Math.min(beta, cacheNode.bestValue);
+				}
+				if(alpha >= beta)
+				{
+					return cacheNode.bestValue;
+				}
 			}
 			System.out.println("isChecked, should not get here");
 			return -2; //Should NOT be here
@@ -254,7 +273,7 @@ public class SinglePlayer extends SampleGamer {
 		{
 			int tmp = evaluate(node, movesMade);
 			//System.out.println("Found Terminal ");
-			cache.put(node, new CacheNode(tmp, 1000000000, null, node)); //this is a terminal state so no moves are possible
+			cache.put(node, new CacheNode(tmp, 1000000000, null, node, CacheNode.type.exact)); //this is a terminal state so no moves are possible
 																							//so null works as an optimal move
 			//System.out.println("made infinite depth cache entry");
 			bestValue = Math.max(tmp, bestValue);
@@ -287,16 +306,30 @@ public class SinglePlayer extends SampleGamer {
 			{
 				ArrayList<Move> childMove = (ArrayList<Move>)movesMade.clone();
 				childMove.add(child);
-				int value = mini(node, child, depth-1, childMove);
+				int value = mini(node, child, depth-1, childMove, beta, alpha);
+				alpha = Math.max(alpha, value);
 				if(value > currBestValue)
 				{
 					currBestValue = value;
 					currBestMove = child;
 				}
 			}
+			CacheNode.type cacheFlag;
+			if(currBestValue <= startAlpha)
+			{
+				cacheFlag = CacheNode.type.upper;
+			}
+			else if(currBestValue >= beta)
+			{
+				cacheFlag = CacheNode.type.lower;
+			}
+			else
+			{
+				cacheFlag = CacheNode.type.exact;
+			}
 
 			//System.out.println("Node before caching " + node);
-			cache.put(node, new CacheNode(currBestValue, depth , currBestMove, node));
+			cache.put(node, new CacheNode(currBestValue, depth , currBestMove, node, cacheFlag));
 			//System.out.println("getting our node " + cache.get(node).node);
 			bestValue = Math.max(currBestValue, bestValue);
 			//System.out.println("Node after caching " + new CacheNode(currBestValue, depth , currBestMove, node).node);
@@ -311,7 +344,7 @@ public class SinglePlayer extends SampleGamer {
 		System.out.println("At the end of maxi, should not get here");
 		return -5;
 	}
-    public int mini(MachineState node,Move ourMove, int depth,ArrayList<Move> movesMade)
+    public int mini(MachineState node,Move ourMove, int depth,ArrayList<Move> movesMade, int alpha, int beta)
     {
         List<List<Move>> legalMoves;
 		try {
@@ -322,7 +355,8 @@ public class SinglePlayer extends SampleGamer {
 			List<Move> currWorstMoves = legalMoves.get(0);
 			for(List<Move> moveSet:legalMoves)
 	        {
-				int value = maxi(stateMachine.getNextState(node, moveSet), depth, movesMade);
+				int value = maxi(stateMachine.getNextState(node, moveSet), depth, movesMade, beta, alpha);
+				alpha = Math.min(alpha, value);
 				if(value < currWorstValue)
 				{
 					currWorstValue = value;
@@ -351,6 +385,7 @@ public class SinglePlayer extends SampleGamer {
 	//A að keyra á rót með depth = 0, maxDepth = 0 og movesMade tómt
 	public void explore(MachineState node, int depth, int maxDepth, ArrayList<Move> movesMade) throws TimeoutException
 	{
+				//For debugging
                 /*for(int i=0;i<depth;i++)
                 {
                     System.out.print(" ");
@@ -378,7 +413,7 @@ public class SinglePlayer extends SampleGamer {
 			//System.out.println("Found Terminal");
 			//System.out.println("We are at " + depth);
 			evaluate(node, movesMade);
-			visitedState.put(node, new CacheNode(bestValue, depth, null, node));// add(node.hashCode()); //.hashCode());
+			visitedState.put(node, new CacheNode(bestValue, depth, null, node, null));// add(node.hashCode()); //.hashCode());
 			return;
 		}
 		if(isSolved())
@@ -406,7 +441,7 @@ public class SinglePlayer extends SampleGamer {
 			return;
 		}
 		//System.out.println("I should get here!!!!!");
-		visitedState.put(node, new CacheNode(bestValue, depth, null, node));//add(node); //.hashCode());
+		visitedState.put(node, new CacheNode(bestValue, depth, null, node, null));//add(node); //.hashCode());
 		try{
             mostmoves =  Math.max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
 			for(Move child : stateMachine.getLegalMoves(node, getRole()))
@@ -419,8 +454,8 @@ public class SinglePlayer extends SampleGamer {
 			}
 		}
 		catch(Exception e){
-			//System.out.println(e);
-			System.out.println("Either no successor state or no legal moves");
+			System.out.println(e);
+			//System.out.println("Either no successor state or no legal moves");
 			if(stateMachine.isTerminal(node))
 			{
 				System.out.println("There are no legal moves because we have reached end of game");
@@ -519,8 +554,8 @@ public class SinglePlayer extends SampleGamer {
 		} catch (MoveDefinitionException e) {
 			System.err.println("No legal moves");
 		}
-
-        return (int)(100*size/mostmoves);
+    	//System.out.println(mostmoves + "   " + size);
+        return (int)(100*(size/(2*mostmoves)));
     }
 
     //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this

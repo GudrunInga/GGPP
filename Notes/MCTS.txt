@@ -1,0 +1,15 @@
+Node:
+	Quality value Q: the average score of action a for role r:
+		HashMap<Pair<action,role>, int>
+	Number of simulations N(s, r, a): The number of simulations run with the action a played by role r:
+		HashMap<Pair<action,role>int>
+	Number of total visits N(s):
+		int
+	Children: Hvert node inniheldur children sem er:
+		 HashMap<action, Node>;
+	Parents: Node[] ArrayList;
+	State: MachineState state
+
+When adding to the tree:
+	Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu p.s. pathToNode er 	List<actions> þ.a. ef öll þau action eru tekin frá rót komum við í viðeigandi nóðu.
+	On add tökum við hvort viðkomandi MachineState er í hashmappinu ef já: bæta þeirri nóðu í selectedNodeChildren og SelectedNode í NodeToAdd.parents. ef nei; bæta í tré og HashMap.
