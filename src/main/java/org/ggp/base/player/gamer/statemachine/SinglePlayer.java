@@ -56,7 +56,7 @@ public class SinglePlayer extends SampleGamer {
     //currently, can be set to "mobility", "novelty", "goal distance"
     //which will cause the player to use the corresponding goal heuristic
     //if the string is anything other, we will use goal distance value
-    public String mode = "mobility";
+    public String mode = "novelty";
 
 
 	@Override
@@ -520,7 +520,7 @@ public class SinglePlayer extends SampleGamer {
 			System.err.println("No legal moves");
 		}
 
-        return (int)(100*size/(2*mostmoves));
+        return (int)(100*size/mostmoves);
     }
 
     //rational mobility attempts to evaluate how much control we have over the game compared to our opponents (note that in multiplayer games, this
