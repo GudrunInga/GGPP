@@ -3,6 +3,7 @@ package org.ggp.base.player.gamer.statemachine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
+import java.util.Random;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.MachineState;
@@ -35,7 +36,7 @@ public class MCTS_Player extends SampleGamer{
 		int numVisits;
 
 		//Children: Hvert node inniheldur children sem er:
-		HashMap<Move, Node> children;
+		ArrayList<Node> children;
 		//List of Parents
 		ArrayList<Node> parents;
 		//State:
@@ -47,6 +48,7 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+            
 
 	}
 	@Override
@@ -57,9 +59,41 @@ public class MCTS_Player extends SampleGamer{
 				return null;
 	}
 
-	public void selection() throws TimeoutException{
+	public void selection(Node node) throws TimeoutException{
+            if(Node.children.isEmpty())
+            {
+                return node;
+            }
 
+            for(Node child:node.children)
+            {
+                if(child.children.isEmpty())
+                {
+                    return child;
+                }
+            }
+
+            score=0;
+            result=0;
+
+            for(Node child:node.children)
+            {
+                int newScore=selector(child);
+                if(newScore>score)
+                {
+                    score=newScore;
+                    result=child;
+                }
+                    
+            }
+
+            return result;
 	}
+
+        public int selector(Node node)
+        {
+            return Random.nextInt(100);
+        }
 
 	public void expansion() throws TimeoutException{
 
