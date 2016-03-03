@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
@@ -9,6 +10,7 @@ import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.Role;
+import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -44,11 +46,12 @@ public class MCTS_Player extends SampleGamer{
 	}
 	//Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu
 	HashMap<MachineState, Node> knownStates;
+	StateMachine stateMachine;
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-
+		stateMachine = getStateMachine();
 
 	}
 	@Override
@@ -97,14 +100,30 @@ public class MCTS_Player extends SampleGamer{
     }
 
 
-    /*function expand (node)
-    {var actions = findlegals(role,node.state,game);
-     for (var i=0; i<actions.length; i++)
-         {var newstate = simulate(seq(actions[i]),state);
-          var newnode = makenode(newstate,0,0,node,seq());
-          node.children[node.children.length]=newnode};
-     return true} */
-	public void expansion() throws TimeoutException{
+    /*From chapter 8
+     * function expand (node){
+     * 	var actions = findlegals(role,node.state,game);
+     * 	for (var i=0; i<actions.length; i++){
+     * 		var newstate = simulate(seq(actions[i]),state);
+     * 		var newnode = makenode(newstate,0,0,node,seq());
+     * 		node.children[node.children.length]=newnode
+     * 	};
+     * 	return true
+     * }
+     */
+	public void expansion(Node node) throws TimeoutException{
+		try {
+			List<List<Move>> actions = stateMachine.getLegalJointMoves(node.state);
+			for(int i = 0; i < actions.size(); i++){
+				MachineState newState; // = simulate something
+				Node newNode = new Node();
+				//Set the values in the new Node
+				//add the newNode to node.children
+			}
+		} catch (MoveDefinitionException e) {
+			System.out.println("No joint legal moves");
+			//e.printStackTrace();
+		}
 
 	}
 
@@ -112,8 +131,21 @@ public class MCTS_Player extends SampleGamer{
 
 	}
 
-	public void backpropogation() throws TimeoutException{
-
+	/* From chapter 8
+	 * function backpropagate (node,score)
+	 * 	{node.visits = node.visits+1;
+	 * 	node.utility = node.utility+score;
+	 * 	if (node.parent) {backpropagate(node.parent,score)};
+	 * 	return true}
+	 */
+	public void backpropogate(Node node, int score) throws TimeoutException{
+		node.numVisits = node.visits + 1;
+		//node.utility = node.utility+score;
+		if(node.parents != null){
+			for(Node parentNode : node.parents){
+				backpropogate(parentNode, score);
+			}
+		}
 	}
 
 }
