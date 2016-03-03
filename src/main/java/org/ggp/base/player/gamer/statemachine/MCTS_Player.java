@@ -22,6 +22,11 @@ public class MCTS_Player extends SampleGamer{
 		Move move;
 		Role role;
 
+		public Pair(Move move, Role role)
+		{
+			this.move = move;
+			this.role = role;
+		}
 		public boolean equals(Pair pair){
 			return this.move.equals(pair.move) && this.role.equals(pair.role);
 		}
