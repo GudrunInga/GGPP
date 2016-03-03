@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.SortedMap;
-import java.util.Set;
-import java.util.Iterator;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -42,7 +40,7 @@ public class MCTS_Player extends SampleGamer{
 
 		//Children: Hvert node inniheldur children sem er:
 
-		OrderedMap<Move,Node> children;
+		SortedMap<Move,Node> children;
 		//List of Parents
 		ArrayList<Node> parents;
 		//State:
@@ -77,7 +75,7 @@ public class MCTS_Player extends SampleGamer{
 
             for(Move childKey : node.children.keySet())
             {
-                child=node.children.get(childkey);
+                Node child =node.children.get(childKey);
                 if(child.children.isEmpty())
                 {
                     return child;
@@ -89,7 +87,7 @@ public class MCTS_Player extends SampleGamer{
 
             for(Move childKey : node.children.keySet())
             {
-                child=node.children.get(childKey);
+                Node child = node.children.get(childKey);
                 int newScore = selector(child);
                 if(newScore>score)
                 {
@@ -148,7 +146,7 @@ public class MCTS_Player extends SampleGamer{
 	 * 	return true}
 	 */
 	public void backpropogate(Node node, int score) throws TimeoutException{
-		node.numVisits = node.visits + 1;
+		node.numVisits = node.numVisits + 1;
 		//node.utility = node.utility+score;
 		if(node.parents != null){
 			for(Node parentNode : node.parents){
