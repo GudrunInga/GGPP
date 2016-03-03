@@ -2,8 +2,8 @@ package org.ggp.base.player.gamer.statemachine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.TimeoutException;
 import java.util.Random;
+import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.MachineState;
@@ -48,7 +48,7 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-            
+
 
 	}
 	@Override
@@ -59,13 +59,13 @@ public class MCTS_Player extends SampleGamer{
 				return null;
 	}
 
-	public void selection(Node node) throws TimeoutException{
-            if(Node.children.isEmpty())
+	public Node selection(Node node) throws TimeoutException{
+            if(node.children.isEmpty())
             {
                 return node;
             }
 
-            for(Node child:node.children)
+            for(Node child : node.children)
             {
                 if(child.children.isEmpty())
                 {
@@ -73,28 +73,37 @@ public class MCTS_Player extends SampleGamer{
                 }
             }
 
-            score=0;
-            result=0;
+            int score=0;
+            Node result = node;
 
-            for(Node child:node.children)
+            for(Node child : node.children)
             {
-                int newScore=selector(child);
+                int newScore = selector(child);
                 if(newScore>score)
                 {
                     score=newScore;
-                    result=child;
+                    result = child;
                 }
-                    
+
             }
 
             return result;
 	}
 
-        public int selector(Node node)
-        {
-            return Random.nextInt(100);
-        }
+    public int selector(Node node)
+    {
+    	Random rand = new Random();
+        return rand.nextInt(100);
+    }
 
+
+    /*function expand (node)
+    {var actions = findlegals(role,node.state,game);
+     for (var i=0; i<actions.length; i++)
+         {var newstate = simulate(seq(actions[i]),state);
+          var newnode = makenode(newstate,0,0,node,seq());
+          node.children[node.children.length]=newnode};
+     return true} */
 	public void expansion() throws TimeoutException{
 
 	}
