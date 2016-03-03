@@ -147,7 +147,10 @@ public class MCTS_Player extends SampleGamer{
 	 */
 	public void backpropogate(Node node, int score) throws TimeoutException{
 		node.numVisits = node.numVisits + 1;
-		//node.utility = node.utility+score;
+		Pair roleAction = new Pair();
+
+		//Need to check if node.valueQ.pair equals roleAction ?
+		node.valueQ.replace(roleAction, node.valueQ.get(roleAction) + score);
 		if(node.parents != null){
 			for(Node parentNode : node.parents){
 				backpropogate(parentNode, score);
