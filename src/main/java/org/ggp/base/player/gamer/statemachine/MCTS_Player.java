@@ -3,6 +3,9 @@ package org.ggp.base.player.gamer.statemachine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.SortedMap;
+import java.util.Set;
+import java.util.Iterator;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -36,7 +39,8 @@ public class MCTS_Player extends SampleGamer{
 		int numVisits;
 
 		//Children: Hvert node inniheldur children sem er:
-		ArrayList<Node> children;
+
+		OrderedMap<Move,Node> children;
 		//List of Parents
 		ArrayList<Node> parents;
 		//State:
@@ -59,14 +63,18 @@ public class MCTS_Player extends SampleGamer{
 				return null;
 	}
 
+        //returns the leaf node of the tree whose children
+        //will be added to the tree, and from which the
+        //current simulation will be run
 	public Node selection(Node node) throws TimeoutException{
             if(node.children.isEmpty())
             {
                 return node;
             }
 
-            for(Node child : node.children)
+            for(Move childKey : node.children.keySet())
             {
+                child=node.children.get(childkey);
                 if(child.children.isEmpty())
                 {
                     return child;
@@ -76,8 +84,9 @@ public class MCTS_Player extends SampleGamer{
             int score=0;
             Node result = node;
 
-            for(Node child : node.children)
+            for(Move childKey : node.children.keySet())
             {
+                child=node.children.get(childKey);
                 int newScore = selector(child);
                 if(newScore>score)
                 {
