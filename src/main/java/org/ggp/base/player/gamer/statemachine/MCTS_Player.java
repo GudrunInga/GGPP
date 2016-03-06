@@ -3,8 +3,10 @@ package org.ggp.base.player.gamer.statemachine;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -18,12 +20,11 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class MCTS_Player extends SampleGamer{
 
-        //perhaps change hashmap to just storing Nodes instead of paths to Nodes
-	private class Pair{
-		List<Move> move;
+	private class Pair implements Comparable<Pair>{
+		Move move;
 		Role role;
 
-		public Pair(List<Move> move, Role role)
+		public Pair(Move move, Role role)
 		{
 			this.move = move;
 			this.role = role;
@@ -40,6 +41,13 @@ public class MCTS_Player extends SampleGamer{
 		@Override
 		public int hashCode(){
 			return move.hashCode()+role.hashCode();
+		}
+
+		@Override
+		public int compareTo(Pair pair)
+		{
+
+			return 0;
 		}
 	}
 	private class Node{

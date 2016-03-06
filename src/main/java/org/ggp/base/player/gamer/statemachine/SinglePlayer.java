@@ -444,8 +444,7 @@ public class SinglePlayer extends SampleGamer {
 		visitedState.put(node, new CacheNode(bestValue, depth, null, node, null));//add(node); //.hashCode());
 		try{
             mostmoves =  Math.max(mostmoves,stateMachine.getLegalMoves(node, getRole()).size());
-            List<Move> legalMoves = stateMachine.getLegalMoves(node, getRole());
-			for(Move child : legalMoves)
+			for(Move child : stateMachine.getLegalMoves(node, getRole()))
 			{
 				ArrayList<Move> nextMove = new ArrayList<Move>();
 				nextMove.add(child);
