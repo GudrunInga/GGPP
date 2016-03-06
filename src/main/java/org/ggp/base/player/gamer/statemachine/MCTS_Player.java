@@ -20,11 +20,22 @@ public class MCTS_Player extends SampleGamer{
 
         //perhaps change hashmap to just storing Nodes instead of paths to Nodes
 	private class Pair{
-		Move move;
+		List<Move> move;
 		Role role;
 
-		public boolean equals(Pair pair){
-			return this.move.equals(pair.move) && this.role.equals(pair.role);
+		public Pair(List<Move> move, Role role)
+		{
+			this.move = move;
+			this.role = role;
+		}
+		@Override
+		public boolean equals(Object pair){
+			//Tekið úr lab2 solution ARTI - megum við það?
+			if (! (pair instanceof Pair )) {
+				return false ;
+			}
+			Pair p = (Pair) pair;
+			return this.move.equals(p.move) && this.role.equals(p.role);
 		}
 		@Override
 		public int hashCode(){
@@ -41,11 +52,21 @@ public class MCTS_Player extends SampleGamer{
 
 		//Children: Hvert node inniheldur children sem er:
 
-		SortedMap<Move,Node> children;
+		//List of moves since we ask for list<list<Move>> legaljointmoves í expansion
+		SortedMap<List<Move>,Node> children;
 		//List of Parents
 		ArrayList<Node> parents;
 		//State:
 		MachineState state;
+
+		//Constructor
+		public Node(MachineState state, HashMap<Pair, Integer > valueQ,HashMap<Pair, Integer>  numSim, int numVisits){
+			this.valueQ = valueQ;
+			this.numSim = numSim;
+			this.numVisits = numVisits;
+			this.state = state;
+
+		}
 	}
 	//Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu
 	HashMap<MachineState, Node> knownStates;
@@ -73,8 +94,8 @@ public class MCTS_Player extends SampleGamer{
             {
                 return node;
             }
-
-            for(Move childKey : node.children.keySet())
+            //Change from Move to List<Move>, blame expansion
+            for(List<Move> childKey : node.children.keySet())
             {
                 Node child =node.children.get(childKey);
                 if(child.children.isEmpty())
@@ -85,8 +106,8 @@ public class MCTS_Player extends SampleGamer{
 
             int score=0;
             Node result = node;
-
-            for(Move childKey : node.children.keySet())
+            //Change from Move to List<Move>, blame expansion
+            for(List<Move> childKey : node.children.keySet())
             {
                 Node child = node.children.get(childKey);
                 int newScore = selector(child);
@@ -95,9 +116,9 @@ public class MCTS_Player extends SampleGamer{
                     score=newScore;
                     result = child;
                 }
-
             }
-
+            //Should we call it from here?
+            expansion(result);
             return result;
 	}
 
@@ -121,22 +142,51 @@ public class MCTS_Player extends SampleGamer{
      */
 	public void expansion(Node node) throws TimeoutException{
 		try {
-			List<List<Move>> actions = stateMachine.getLegalJointMoves(node.state);
-			for(int i = 0; i < actions.size(); i++){
-				MachineState newState; // = simulate something
-				Node newNode = new Node();
-				//Set the values in the new Node
-				//add the newNode to node.children
+			/*
+			 * If L is a not a terminal node (i.e. it does not end the game)
+			 * then create one or more child nodes and select one C.
+			 */
+			if(!stateMachine.isTerminal(node.state)){
+				//All possible legal moves
+				List<List<Move>> actions = stateMachine.getLegalJointMoves(node.state);
+
+				//How should we select what child we will simulate?
+				//Should we use list of joint moves instead of just one move
+				for(List<Move> action : actions){
+
+					MachineState newState = stateMachine.getNextState(node.state, action);
+
+					Pair newPair = new Pair(action, getRole());
+					HashMap<Pair, Integer> numSim = new HashMap<Pair, Integer>();
+					numSim.put(newPair, 0);
+					HashMap<Pair, Integer> valueQ = new HashMap<Pair, Integer>();
+					valueQ.put(newPair, 0);
+
+					Node newNode = new Node(newState, valueQ, numSim, 0);
+
+					int value = simulation(newState);
+					backpropogate(newNode, value, action);
+					//add the newNode to node.children
+					node.children.put(action, newNode);
+				}
 			}
-		} catch (MoveDefinitionException e) {
-			System.out.println("No joint legal moves");
+		} catch (MoveDefinitionException | TransitionDefinitionException | GoalDefinitionException e) {
+			System.out.println("No joint legal moves or no actions i nor goal value for tht state");
 			//e.printStackTrace();
 		}
 
 	}
-
-	public void simulation() throws TimeoutException{
-
+	/*
+	 * Run a simulated playout from C until a result is achieved.
+	 */
+	public int simulation(MachineState state) throws TimeoutException, GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException{
+		if(stateMachine.isTerminal(state)){
+			return stateMachine.getGoal(state, getRole());
+		}
+		else{
+			simulation(stateMachine.getRandomNextState(state));
+		}
+		return 0;
 	}
 
 	/* From chapter 8
@@ -146,17 +196,27 @@ public class MCTS_Player extends SampleGamer{
 	 * 	if (node.parent) {backpropagate(node.parent,score)};
 	 * 	return true}
 	 */
-	public void backpropogate(Node node, int score) throws TimeoutException{
-		node.numVisits = node.numVisits + 1;
-		Pair roleAction = new Pair();
+	public void backpropogate(Node node, int score, List<Move> action) throws TimeoutException{
+		node.numVisits += 1;
+		if(node.parents == null){
+			return;
+		}
+		//Could be a problem here, what if node has two parents that have the same parent? Is that possible?
+		for(Node parent : node.parents){
+			backpropogate(parent, score, action);
+		}
+
+		Pair pair = new Pair(action, getRole());
+
+		int value = node.numSim.get(pair);
+		node.numSim.put(pair, value+1);
+
+		//average_new = average_old + ((value-average_old)/size_new)
+		int avgQ = node.valueQ.get(pair);
+		avgQ = avgQ + ((score-avgQ)/node.numVisits);
+		node.valueQ.put(pair, avgQ);
 
 		//Need to check if node.valueQ.pair equals roleAction ?
-		node.valueQ.replace(roleAction, node.valueQ.get(roleAction) + score);
-		if(node.parents != null){
-			for(Node parentNode : node.parents){
-				backpropogate(parentNode, score);
-			}
-		}
 	}
 
 }
