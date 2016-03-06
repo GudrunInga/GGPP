@@ -18,6 +18,7 @@ import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 
 public class MCTS_Player extends SampleGamer{
 
+        //perhaps change hashmap to just storing Nodes instead of paths to Nodes
 	private class Pair{
 		Move move;
 		Role role;
