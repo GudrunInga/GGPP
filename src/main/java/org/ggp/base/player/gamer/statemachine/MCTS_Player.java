@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.SortedMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -31,7 +29,7 @@ public class MCTS_Player extends SampleGamer{
 		}
 		@Override
 		public boolean equals(Object pair){
-			//Tekið úr lab2 solution ARTI - megum við það?
+			//Tekið úr lab2 solution ARTI
 			if (! (pair instanceof Pair )) {
 				return false ;
 			}
@@ -52,89 +50,188 @@ public class MCTS_Player extends SampleGamer{
 	}
 	private class Node{
 		//Quality value Q: the average score of action a for role r:
-		HashMap<Pair, Integer > valueQ;
+		//HashMap<Pair, Integer > valueQ;
+		List<Pair> pairIndex;
+		List<Integer> valueQ;
+
 		//Number of simulations N(s, r, a): The number of simulations run with the action a played by role r:
-		HashMap<Pair, Integer>  numSim;
+		//SortedMap<Pair, Integer>  numSim;
+		//List<Pair> numSimIndex;
+		List<Integer> numSim;
 		//Number of total visits N(s):
 		int numVisits;
 
 		//Children: Hvert node inniheldur children sem er:
 
 		//List of moves since we ask for list<list<Move>> legaljointmoves í expansion
-		SortedMap<List<Move>,Node> children;
+		//HashMap<List<Move>,Node> children; //Change this!!!!
+		List<List<Move>> childIndex;
+		List<Node> children;
 		//List of Parents
 		ArrayList<Node> parents;
 		//State:
 		MachineState state;
 
 		//Constructor
-		public Node(MachineState state, HashMap<Pair, Integer > valueQ,HashMap<Pair, Integer>  numSim, int numVisits){
+		public Node(MachineState state, List<Pair> pairIndex, List<Integer> valueQ, List<Integer>  numSim, int numVisits){
+			this.pairIndex = pairIndex;
 			this.valueQ = valueQ;
+
 			this.numSim = numSim;
 			this.numVisits = numVisits;
 			this.state = state;
+			this.childIndex = new ArrayList<List<Move>>();
+			this.children = new ArrayList<Node>();
+			this.parents = new ArrayList<Node>();
 
 		}
 	}
 	//Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu
 	HashMap<MachineState, Node> knownStates;
 	StateMachine stateMachine;
+	long stoptime;
+	Node root;
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
+		stoptime = timeout - 100;
 		stateMachine = getStateMachine();
+		List<Integer> numSim = new ArrayList<Integer>();
+		List<Pair> pairIndex = new ArrayList<Pair>();
+		List< Integer> valueQ = new ArrayList<Integer>();
+		MachineState newState = stateMachine.getInitialState();
+		for(Role role : stateMachine.getRoles()){
+			for(Move move : stateMachine.getLegalMoves(newState, role)){
+				Pair newPair = new Pair(move, role);
+				numSim.add(0);
+				pairIndex.add(newPair);
+				valueQ.add(0);
+			}
+		}
+		root = new Node(newState, pairIndex, valueQ, numSim, 0);
+		try{
+			while(true){
+				Node selected = selection(root);
+				expansion(selected);
+				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
+
+				//TODO we are losing one simulation on the bottom node
+				int value = simulation(stateMachine.getNextState(selected.state, firstMove));
+				backpropogate(selected, value, firstMove);
+			}
+		}catch (TimeoutException e){
+			System.out.println("Times up, lets' do this");
+		}
+
 
 	}
 	@Override
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
+		stoptime = timeout - 500;
+		MachineState currState = getCurrentState();
+		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
+		// setja hana sem rót.
 
-				return null;
+		int currMaxN = 0;
+		Move currBestMove = stateMachine.getRandomMove(root.state, getRole());
+		try{
+			for(int i = 0; i < root.numSim.size(); i++){
+				if(root.numSim.get(i) > currMaxN){
+					currMaxN = root.numSim.get(i);
+					currBestMove = root.pairIndex.get(i).move;
+				}
+			}
+
+			while(true){
+				Node selected = selection(root);
+				expansion(selected);
+				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
+
+				//TODO we are losing one simulation on the bottom node
+				int value = simulation(stateMachine.getNextState(selected.state, firstMove));
+				backpropogate(selected, value, firstMove);
+			}
+		}catch (TimeoutException e){
+
+			for(int i = 0; i < root.numSim.size(); i++){
+				if(System.currentTimeMillis() >= timeout - 50){
+					break;
+				}
+				if(root.numSim.get(i) > currMaxN){
+					currMaxN = root.numSim.get(i);
+					currBestMove = root.pairIndex.get(i).move;
+				}
+			}
+		}
+
+		return currBestMove;
 	}
 
         //returns the leaf node of the tree whose children
         //will be added to the tree, and from which the
         //current simulation will be run
 	public Node selection(Node node) throws TimeoutException{
-            if(node.children.isEmpty())
+		if(System.currentTimeMillis() >= stoptime){
+			throw new TimeoutException();
+		}
+        if(node.children.isEmpty())
+        {
+            return node;
+        }
+        //Change from Move to List<Move>, blame expansion
+        for(int i = 0; i < node.children.size(); i++)
+        {
+            Node child = node.children.get(i);
+            if(child.children.isEmpty())
             {
-                return node;
+                return child;
             }
-            //Change from Move to List<Move>, blame expansion
-            for(List<Move> childKey : node.children.keySet())
-            {
-                Node child =node.children.get(childKey);
-                if(child.children.isEmpty())
-                {
-                    return child;
-                }
-            }
+        }
 
-            int score=0;
-            Node result = node;
-            //Change from Move to List<Move>, blame expansion
-            for(List<Move> childKey : node.children.keySet())
+        int score=0;
+        Node result = node;
+        //Change from Move to List<Move>, blame expansion
+        for(int i = 0; i < node.children.size(); i++){
+            Node child = node.children.get(i);
+            int newScore = selector(node, node.childIndex.get(i));
+            if(newScore>score)
             {
-                Node child = node.children.get(childKey);
-                int newScore = selector(child);
-                if(newScore>score)
-                {
-                    score=newScore;
-                    result = child;
-                }
+                score=newScore;
+                result = child;
             }
-            //Should we call it from here?
-            expansion(result);
-            return result;
+        }
+        return selection(result);
 	}
 
-    public int selector(Node node)
+    public int selector(Node node, List<Move> moveList)
     {
     	Random rand = new Random();
         return rand.nextInt(100);
+        /*int sum = 0;
+        List<Role> allRoles = stateMachine.getRoles();
+        Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
+        int C = 40;
+
+        for(Role role : allRoles){
+        	int index = 0;
+        	Pair pair = new Pair(moveList.get(roleMap.get(role)), role);
+        	for(int i = 0; i < node.pairIndex.size(); i++){
+        		if(pair == node.pairIndex.get(i)){
+        			index = i;
+        			break;
+        		}
+        	}
+        	sum += node.valueQ.get(index) + C * Math.sqrt(Math.log(node.numVisits)/node.numSim.get(index));
+        					//C * is the uct exploration term
+        }
+
+        return sum;*/
+
     }
+
 
 
     /*From chapter 8
@@ -149,6 +246,9 @@ public class MCTS_Player extends SampleGamer{
      * }
      */
 	public void expansion(Node node) throws TimeoutException{
+		if(System.currentTimeMillis() >= stoptime){
+			throw new TimeoutException();
+		}
 		try {
 			/*
 			 * If L is a not a terminal node (i.e. it does not end the game)
@@ -164,22 +264,27 @@ public class MCTS_Player extends SampleGamer{
 
 					MachineState newState = stateMachine.getNextState(node.state, action);
 
-					Pair newPair = new Pair(action, getRole());
-					HashMap<Pair, Integer> numSim = new HashMap<Pair, Integer>();
-					numSim.put(newPair, 0);
-					HashMap<Pair, Integer> valueQ = new HashMap<Pair, Integer>();
-					valueQ.put(newPair, 0);
-
-					Node newNode = new Node(newState, valueQ, numSim, 0);
-
-					int value = simulation(newState);
-					backpropogate(newNode, value, action);
+					List<Pair> pairIndex = new ArrayList<Pair>();
+					List<Integer> numSim = new ArrayList<Integer>();
+					List<Integer> valueQ = new ArrayList<Integer>();
+					for(Role role : stateMachine.getRoles()){
+						for(Move move : stateMachine.getLegalMoves(newState, role)){
+							Pair newPair = new Pair(move, role);
+							pairIndex.add(newPair);
+							numSim.add(0);
+							valueQ.add(0);
+						}
+					}
+					Node newNode = new Node(newState, pairIndex, valueQ, numSim, 0);
+					newNode.parents.add(node);
 					//add the newNode to node.children
-					node.children.put(action, newNode);
+					node.childIndex.add(action);
+					node.children.add(newNode);
+
 				}
 			}
-		} catch (MoveDefinitionException | TransitionDefinitionException | GoalDefinitionException e) {
-			System.out.println("No joint legal moves or no actions i nor goal value for tht state");
+		} catch (MoveDefinitionException | TransitionDefinitionException e) {
+			System.out.println("No moves or no transitions");
 			//e.printStackTrace();
 		}
 
@@ -187,12 +292,30 @@ public class MCTS_Player extends SampleGamer{
 	/*
 	 * Run a simulated playout from C until a result is achieved.
 	 */
-	public int simulation(MachineState state) throws TimeoutException, GoalDefinitionException, MoveDefinitionException, TransitionDefinitionException{
+	public int simulation(MachineState state) throws TimeoutException{
+		if(System.currentTimeMillis() >= stoptime){
+			throw new TimeoutException();
+		}
 		if(stateMachine.isTerminal(state)){
-			return stateMachine.getGoal(state, getRole());
+			try {
+				return stateMachine.getGoal(state, getRole());
+			} catch (GoalDefinitionException e) {
+				System.out.println("Unreachable goal definition");
+				e.printStackTrace();
+			}
 		}
 		else{
-			simulation(stateMachine.getRandomNextState(state));
+			try {
+				simulation(stateMachine.getRandomNextState(state));
+			} catch (MoveDefinitionException e) {
+				// TODO Auto-generated catch block
+				System.out.println("No goddam moves allowed for non-terminal state");
+				e.printStackTrace();
+			} catch (TransitionDefinitionException e) {
+				// TODO Auto-generated catch block
+				System.out.println("No transition from non-terminal state");
+				e.printStackTrace();
+			}
 		}
 		return 0;
 	}
@@ -204,27 +327,77 @@ public class MCTS_Player extends SampleGamer{
 	 * 	if (node.parent) {backpropagate(node.parent,score)};
 	 * 	return true}
 	 */
-	public void backpropogate(Node node, int score, List<Move> action) throws TimeoutException{
+	public void backpropogate(Node node, int score, Node callingNode) throws TimeoutException
+	{
+		if(System.currentTimeMillis() >= stoptime){
+			throw new TimeoutException();
+		}
 		node.numVisits += 1;
-		if(node.parents == null){
-			return;
-		}
+
 		//Could be a problem here, what if node has two parents that have the same parent? Is that possible?
-		for(Node parent : node.parents){
-			backpropogate(parent, score, action);
+        for(int i = 0; i < node.children.size(); i++)
+        {
+            Node child = node.children.get(i);
+            if(child.equals(callingNode))
+            {
+            	List<Role> allRoles = stateMachine.getRoles();
+				Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
+				for(Role role : allRoles){
+					int index = 0;
+					Pair pair = new Pair(node.childIndex.get(i).get(roleMap.get(role)), role);
+					for(int k = 0; k < node.numSim.size(); k++){
+						if(pair.equals(node.pairIndex.get(k))){
+							index = k;
+							break;
+						}
+					}
+					int value = node.numSim.get(index);
+					node.pairIndex.add(pair);
+					node.numSim.add(value+1);
+
+					int avgQ = node.valueQ.get(index);
+					avgQ = avgQ + ((score-avgQ)/node.numVisits);
+					node.valueQ.add(avgQ);
+				}
+				break;
+            }
+        }
+		if(!node.parents.isEmpty()){
+			for(Node parent : node.parents){
+				backpropogate(parent, score, node);
+			}
 		}
-
-		Pair pair = new Pair(action, getRole());
-
-		int value = node.numSim.get(pair);
-		node.numSim.put(pair, value+1);
-
-		//average_new = average_old + ((value-average_old)/size_new)
-		int avgQ = node.valueQ.get(pair);
-		avgQ = avgQ + ((score-avgQ)/node.numVisits);
-		node.valueQ.put(pair, avgQ);
-
-		//Need to check if node.valueQ.pair equals roleAction ?
 	}
 
+	public void backpropogate(Node node, int score, List<Move> moves) throws TimeoutException
+	{
+		if(System.currentTimeMillis() >= stoptime){
+			throw new TimeoutException();
+		}
+		node.numVisits += 1;
+		List<Role> allRoles = stateMachine.getRoles();
+		Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
+		for(Role role : allRoles){
+			Pair pair = new Pair(moves.get(roleMap.get(role)), role);
+			int index = 0;
+			for(int i = 0; i < node.pairIndex.size(); i++){
+				if(pair.equals(node.pairIndex.get(i))){
+					index = i;
+					break;
+				}
+			}
+			int value = node.numSim.get(index);
+			node.pairIndex.add(pair);
+			node.numSim.add(value+1);
+
+			int avgQ = node.valueQ.get(index);
+			avgQ = avgQ + ((score-avgQ)/node.numVisits);
+			node.valueQ.add(avgQ);
+		}
+		if(!node.parents.isEmpty()){
+			for(Node parent : node.parents){
+				backpropogate(parent, score, node);
+			}
+		}
+	}
 }
