@@ -348,7 +348,7 @@ public class MCTS_Player extends SampleGamer{
 		}
 		else{
 			try {
-				simulation(stateMachine.getRandomNextState(state));
+				return simulation(stateMachine.getRandomNextState(state));
 			} catch (MoveDefinitionException e) {
 				// TODO Auto-generated catch block
 				System.out.println("No goddam moves allowed for non-terminal state");
@@ -359,7 +359,8 @@ public class MCTS_Player extends SampleGamer{
 				e.printStackTrace();
 			}
 		}
-		return 0; //Ætti að vera null eða new array list
+		System.out.println("I should be unreachable");
+		return null; //Ætti að vera null eða new array list
 	}
 
 	/* From chapter 8
