@@ -156,7 +156,7 @@ public class MCTS_Player extends SampleGamer{
 		Move currBestMove = stateMachine.getRandomMove(root.state, getRole());
 		try{
 			for(int i = 0; i < root.numSim.size(); i++){
-				if(root.numSim.get(i) > currMaxN){
+				if(root.numSim.get(i) > currMaxN && pairIndex.get(i).role.equals(getRole)){
 					currMaxN = root.numSim.get(i);
 					currBestMove = root.pairIndex.get(i).move;
 				}
@@ -185,7 +185,7 @@ public class MCTS_Player extends SampleGamer{
 				if(System.currentTimeMillis() >= timeout - 50){
 					break;
 				}
-				if(root.numSim.get(i) > currMaxN){
+				if(root.numSim.get(i) > currMaxN && pairIndex.get(i).role.equals(getRole)){
 					currMaxN = root.numSim.get(i);
 					currBestMove = root.pairIndex.get(i).move;
 				}
