@@ -263,23 +263,35 @@ public class MCTS_Player extends SampleGamer{
 				for(List<Move> action : actions){
 
 					MachineState newState = stateMachine.getNextState(node.state, action);
-
-					List<Pair> pairIndex = new ArrayList<Pair>();
-					List<Integer> numSim = new ArrayList<Integer>();
-					List<Integer> valueQ = new ArrayList<Integer>();
-					for(Role role : stateMachine.getRoles()){
-						for(Move move : stateMachine.getLegalMoves(newState, role)){
-							Pair newPair = new Pair(move, role);
-							pairIndex.add(newPair);
-							numSim.add(0);
-							valueQ.add(0);
-						}
-					}
-					Node newNode = new Node(newState, pairIndex, valueQ, numSim, 0);
-					newNode.parents.add(node);
-					//add the newNode to node.children
-					node.childIndex.add(action);
-					node.children.add(newNode);
+                                        if(knownStates.containsKey(newState))
+                                        {
+                                            Node foundNode = knownStates.get(newState);
+                                            foundNode.parents.add(node);
+                                            node.childIndex.add(action);
+                                            node.children.add(foundNode);
+                                        }
+                                        else
+                                        {
+                                                
+    
+					    List<Pair> pairIndex = new ArrayList<Pair>();
+					    List<Integer> numSim = new ArrayList<Integer>();
+					    List<Integer> valueQ = new ArrayList<Integer>();
+					    for(Role role : stateMachine.getRoles()){
+						    for(Move move : stateMachine.getLegalMoves(newState, role)){
+							    Pair newPair = new Pair(move, role);
+							    pairIndex.add(newPair);
+							    numSim.add(0);
+							    valueQ.add(0);
+						    }
+					    }
+					    Node newNode = new Node(newState, pairIndex, valueQ, numSim, 0);
+                                            knownStates.add(newState,newNode);
+					    newNode.parents.add(node);
+					    //add the newNode to node.children
+					    node.childIndex.add(action);
+					    node.children.add(newNode);
+                                        }
 
 				}
 			}
