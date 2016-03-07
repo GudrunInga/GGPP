@@ -131,9 +131,24 @@ public class MCTS_Player extends SampleGamer{
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
 		stoptime = timeout - 500;
+
 		MachineState currState = getCurrentState();
 		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
 		// setja hana sem rót.
+		System.out.println(currState);
+
+		List<Pair> pairIndex = new ArrayList<Pair>();
+		List<Integer> numSim = new ArrayList<Integer>();
+		List<Integer> valueQ = new ArrayList<Integer>();
+		for(Role role : stateMachine.getRoles()){
+			for(Move move : stateMachine.getLegalMoves(currState, role)){
+				Pair newPair = new Pair(move, role);
+				pairIndex.add(newPair);
+				numSim.add(0);
+				valueQ.add(0);
+			}
+		}
+		root = new Node(currState, pairIndex, valueQ, numSim, 0);
 
 		int currMaxN = 0;
 		Move currBestMove = stateMachine.getRandomMove(root.state, getRole());
