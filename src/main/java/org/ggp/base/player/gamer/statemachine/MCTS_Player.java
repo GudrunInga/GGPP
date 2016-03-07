@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -360,7 +359,7 @@ public class MCTS_Player extends SampleGamer{
 				e.printStackTrace();
 			}
 		}
-		return 0;
+		return 0; //Ætti að vera null eða new array list
 	}
 
 	/* From chapter 8
@@ -398,9 +397,9 @@ public class MCTS_Player extends SampleGamer{
 					node.pairIndex.add(pair);
 					node.numSim.add(value+1);
 
-                                        int score=scores.get(roleMap.get(role));
+                    int score=scores.get(roleMap.get(role));
 
-					int score = node.valueQ.get(index);
+					int avgQ = node.valueQ.get(index); //var int score....
 					avgQ = avgQ + ((score-avgQ)/node.numVisits);
 					node.valueQ.add(avgQ);
 				}
@@ -414,7 +413,7 @@ public class MCTS_Player extends SampleGamer{
 		}
 	}
 
-	public void backpropogate(Node node, list<Integer> scores, List<Move> moves) throws TimeoutException
+	public void backpropogate(Node node, List<Integer> scores, List<Move> moves) throws TimeoutException
 	{
 		if(System.currentTimeMillis() >= stoptime){
 			throw new TimeoutException();
