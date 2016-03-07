@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
@@ -108,11 +107,7 @@ public class MCTS_Player extends SampleGamer{
 
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-                                    for(Node parent:selected.parents)
-                                    {
-                                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
-                                    }
-					//backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
+					backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
 					continue;
 				}
 				expansion(selected);
@@ -120,8 +115,8 @@ public class MCTS_Player extends SampleGamer{
 
 				//TODO we are losing one simulation on the bottom node
 
-				List<Integer> values = simulation(stateMachine.getNextState(selected.state, firstMove));
-				backpropogate(selected, values, firstMove);
+				int value = simulation(stateMachine.getNextState(selected.state, firstMove));
+				backpropogate(selected, value, firstMove);
 			}
 		}catch (TimeoutException e){
 			System.out.println("Times up, lets' do this");
@@ -166,19 +161,15 @@ public class MCTS_Player extends SampleGamer{
 			while(true){
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-                                    for(Node parent:selected.parents)
-                                    {
-                                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
-                                    }
-				//backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
+					backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
 					continue;
 				}
 				expansion(selected);
 				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
 
 				//TODO we are losing one simulation on the bottom node
-				List<Integer> values = simulation(stateMachine.getNextState(selected.state, firstMove));
-				backpropogate(selected, values, firstMove);
+				int value = simulation(stateMachine.getNextState(selected.state, firstMove));
+				backpropogate(selected, value, firstMove);
 			}
 		}catch (TimeoutException e){
 
@@ -234,8 +225,11 @@ public class MCTS_Player extends SampleGamer{
 
     public int selector(Node node, List<Move> moveList)
     {
+<<<<<<< HEAD
+=======
     	//Random rand = new Random();
         //return rand.nextInt(100);
+>>>>>>> 5661407aeb12329596b1da93d7798be653e6b235
         int sum = 0;
         List<Role> allRoles = stateMachine.getRoles();
         Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
@@ -255,6 +249,11 @@ public class MCTS_Player extends SampleGamer{
         }
 
         return sum;
+<<<<<<< HEAD
+    //	Random rand = new Random();
+    //  return rand.nextInt(100);
+=======
+>>>>>>> 5661407aeb12329596b1da93d7798be653e6b235
 
     }
 
@@ -303,9 +302,9 @@ public class MCTS_Player extends SampleGamer{
 					    List<Integer> valueQ = new ArrayList<Integer>();
 					    for(Role role : stateMachine.getRoles()){
 					    	//Error here in tic tac toe, no legal moves for o player (board is full)
-					    	if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
+					    	/*if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
 					    		break;
-					    	}
+					    	}*/
 						    for(Move move : stateMachine.getLegalMoves(newState, role)){
 							    Pair newPair = new Pair(move, role);
 							    pairIndex.add(newPair);
@@ -335,13 +334,13 @@ public class MCTS_Player extends SampleGamer{
 	/*
 	 * Run a simulated playout from C until a result is achieved.
 	 */
-	public List<Integer> simulation(MachineState state) throws TimeoutException{
+	public int simulation(MachineState state) throws TimeoutException{
 		if(System.currentTimeMillis() >= stoptime){
 			throw new TimeoutException();
 		}
 		if(stateMachine.isTerminal(state)){
 			try {
-				return stateMachine.getGoals(state);
+				return stateMachine.getGoal(state, getRole());
 			} catch (GoalDefinitionException e) {
 				System.out.println("Unreachable goal definition");
 				e.printStackTrace();
@@ -370,7 +369,7 @@ public class MCTS_Player extends SampleGamer{
 	 * 	if (node.parent) {backpropagate(node.parent,score)};
 	 * 	return true}
 	 */
-	public void backpropogate(Node node, List<Integer> scores, Node callingNode) throws TimeoutException
+	public void backpropogate(Node node, int score, Node callingNode) throws TimeoutException
 	{
 		if(System.currentTimeMillis() >= stoptime){
 			throw new TimeoutException();
@@ -398,9 +397,7 @@ public class MCTS_Player extends SampleGamer{
 					node.pairIndex.add(pair);
 					node.numSim.add(value+1);
 
-                                        int score=scores.get(roleMap.get(role));
-
-					int score = node.valueQ.get(index);
+					int avgQ = node.valueQ.get(index);
 					avgQ = avgQ + ((score-avgQ)/node.numVisits);
 					node.valueQ.add(avgQ);
 				}
@@ -409,12 +406,12 @@ public class MCTS_Player extends SampleGamer{
         }
 		if(!node.parents.isEmpty()){
 			for(Node parent : node.parents){
-				backpropogate(parent, scores, node);
+				backpropogate(parent, score, node);
 			}
 		}
 	}
 
-	public void backpropogate(Node node, list<Integer> scores, List<Move> moves) throws TimeoutException
+	public void backpropogate(Node node, int score, List<Move> moves) throws TimeoutException
 	{
 		if(System.currentTimeMillis() >= stoptime){
 			throw new TimeoutException();
@@ -435,14 +432,13 @@ public class MCTS_Player extends SampleGamer{
 			node.pairIndex.add(pair);
 			node.numSim.add(value+1);
 
-                        int score=scores.get(roleMap.get(role));
 			int avgQ = node.valueQ.get(index);
 			avgQ = avgQ + ((score-avgQ)/node.numVisits);
 			node.valueQ.add(avgQ);
 		}
 		if(!node.parents.isEmpty()){
 			for(Node parent : node.parents){
-				backpropogate(parent, scores, node);
+				backpropogate(parent, score, node);
 			}
 		}
 	}
