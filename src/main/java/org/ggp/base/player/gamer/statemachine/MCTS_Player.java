@@ -199,36 +199,40 @@ public class MCTS_Player extends SampleGamer{
         //will be added to the tree, and from which the
         //current simulation will be run
 	public Node selection(Node node) throws TimeoutException{
+            while(!node.children.isEmpty())
+            {
 		if(System.currentTimeMillis() >= stoptime){
 			throw new TimeoutException();
 		}
-        if(node.children.isEmpty())
-        {
-            return node;
-        }
-        //Change from Move to List<Move>, blame expansion
-        for(int i = 0; i < node.children.size(); i++)
-        {
-            Node child = node.children.get(i);
-            if(child.children.isEmpty())
-            {
-                return child;
+                if(node.children.isEmpty())
+                {
+                    return node;
+                }
+                //Change from Move to List<Move>, blame expansion
+                for(int i = 0; i < node.children.size(); i++)
+                {
+                    Node child = node.children.get(i);
+                    if(child.children.isEmpty())
+                    {
+                        return child;
+                    }
+                }
+        
+                int score=0;
+                Node result = node;
+                //Change from Move to List<Move>, blame expansion
+                for(int i = 0; i < node.children.size(); i++){
+                    Node child = node.children.get(i);
+                    int newScore = selector(node, node.childIndex.get(i));
+                    if(newScore>score)
+                    {
+                        score=newScore;
+                        result = child;
+                    }
+                }
+                node=result;
             }
-        }
-
-        int score=0;
-        Node result = node;
-        //Change from Move to List<Move>, blame expansion
-        for(int i = 0; i < node.children.size(); i++){
-            Node child = node.children.get(i);
-            int newScore = selector(node, node.childIndex.get(i));
-            if(newScore>score)
-            {
-                score=newScore;
-                result = child;
-            }
-        }
-        return selection(result);
+            return node; 
 	}
 
     public int selector(Node node, List<Move> moveList)
@@ -348,7 +352,7 @@ public class MCTS_Player extends SampleGamer{
 		}
 		else{
 			try {
-				simulation(stateMachine.getRandomNextState(state));
+				return simulation(stateMachine.getRandomNextState(state));
 			} catch (MoveDefinitionException e) {
 				// TODO Auto-generated catch block
 				System.out.println("No goddam moves allowed for non-terminal state");
@@ -359,6 +363,7 @@ public class MCTS_Player extends SampleGamer{
 				e.printStackTrace();
 			}
 		}
+		System.out.println("I should be unreachable");
 		return null; //Ætti að vera null eða new array list
 	}
 
