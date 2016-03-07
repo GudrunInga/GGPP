@@ -50,21 +50,15 @@ public class MCTS_Player extends SampleGamer{
 	}
 	private class Node{
 		//Quality value Q: the average score of action a for role r:
-		//HashMap<Pair, Integer > valueQ;
 		List<Pair> pairIndex;
 		List<Integer> valueQ;
 
 		//Number of simulations N(s, r, a): The number of simulations run with the action a played by role r:
-		//SortedMap<Pair, Integer>  numSim;
-		//List<Pair> numSimIndex;
 		List<Integer> numSim;
 		//Number of total visits N(s):
 		int numVisits;
 
 		//Children: Hvert node inniheldur children sem er:
-
-		//List of moves since we ask for list<list<Move>> legaljointmoves í expansion
-		//HashMap<List<Move>,Node> children; //Change this!!!!
 		List<List<Move>> childIndex;
 		List<Node> children;
 		//List of Parents
@@ -76,14 +70,12 @@ public class MCTS_Player extends SampleGamer{
 		public Node(MachineState state, List<Pair> pairIndex, List<Integer> valueQ, List<Integer>  numSim, int numVisits){
 			this.pairIndex = pairIndex;
 			this.valueQ = valueQ;
-
 			this.numSim = numSim;
 			this.numVisits = numVisits;
 			this.state = state;
 			this.childIndex = new ArrayList<List<Move>>();
 			this.children = new ArrayList<Node>();
 			this.parents = new ArrayList<Node>();
-
 		}
 	}
 	//Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu
@@ -116,7 +108,8 @@ public class MCTS_Player extends SampleGamer{
 
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-					break;
+					backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
+					continue;
 				}
 				expansion(selected);
 				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
@@ -169,7 +162,8 @@ public class MCTS_Player extends SampleGamer{
 			while(true){
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-					break;
+					backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
+					continue;
 				}
 				expansion(selected);
 				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
@@ -232,6 +226,8 @@ public class MCTS_Player extends SampleGamer{
 
     public int selector(Node node, List<Move> moveList)
     {
+    	//Random rand = new Random();
+        //return rand.nextInt(100);
         int sum = 0;
         List<Role> allRoles = stateMachine.getRoles();
         Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
@@ -251,8 +247,6 @@ public class MCTS_Player extends SampleGamer{
         }
 
         return sum;
-    //	Random rand = new Random();
-    //  return rand.nextInt(100);
 
     }
 
@@ -301,9 +295,9 @@ public class MCTS_Player extends SampleGamer{
 					    List<Integer> valueQ = new ArrayList<Integer>();
 					    for(Role role : stateMachine.getRoles()){
 					    	//Error here in tic tac toe, no legal moves for o player (board is full)
-					    	if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
+					    	/*if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
 					    		break;
-					    	}
+					    	}*/
 						    for(Move move : stateMachine.getLegalMoves(newState, role)){
 							    Pair newPair = new Pair(move, role);
 							    pairIndex.add(newPair);
