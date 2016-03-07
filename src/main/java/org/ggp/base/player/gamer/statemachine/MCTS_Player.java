@@ -232,9 +232,7 @@ public class MCTS_Player extends SampleGamer{
 
     public int selector(Node node, List<Move> moveList)
     {
-    	Random rand = new Random();
-        return rand.nextInt(100);
-        /*int sum = 0;
+        int sum = 0;
         List<Role> allRoles = stateMachine.getRoles();
         Map<Role, Integer> roleMap = stateMachine.getRoleIndices();
         int C = 40;
@@ -252,7 +250,9 @@ public class MCTS_Player extends SampleGamer{
         					//C * is the uct exploration term
         }
 
-        return sum;*/
+        return sum;
+    //	Random rand = new Random();
+    //  return rand.nextInt(100);
 
     }
 
