@@ -97,6 +97,7 @@ public class MCTS_Player extends SampleGamer{
 	{
 		stoptime = timeout - 100;
 		stateMachine = getStateMachine();
+		knownStates = new HashMap<MachineState, Node>();
 		List<Integer> numSim = new ArrayList<Integer>();
 		List<Pair> pairIndex = new ArrayList<Pair>();
 		List< Integer> valueQ = new ArrayList<Integer>();
@@ -112,11 +113,16 @@ public class MCTS_Player extends SampleGamer{
 		root = new Node(newState, pairIndex, valueQ, numSim, 0);
 		try{
 			while(true){
+
 				Node selected = selection(root);
+				if(stateMachine.isTerminal(selected.state)){
+					break;
+				}
 				expansion(selected);
 				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
 
 				//TODO we are losing one simulation on the bottom node
+
 				int value = simulation(stateMachine.getNextState(selected.state, firstMove));
 				backpropogate(selected, value, firstMove);
 			}
@@ -135,7 +141,7 @@ public class MCTS_Player extends SampleGamer{
 		MachineState currState = getCurrentState();
 		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
 		// setja hana sem rót.
-		System.out.println(currState);
+		//System.out.println(currState);
 
 		List<Pair> pairIndex = new ArrayList<Pair>();
 		List<Integer> numSim = new ArrayList<Integer>();
@@ -162,6 +168,9 @@ public class MCTS_Player extends SampleGamer{
 
 			while(true){
 				Node selected = selection(root);
+				if(stateMachine.isTerminal(selected.state)){
+					break;
+				}
 				expansion(selected);
 				List<Move> firstMove = stateMachine.getRandomJointMove(selected.state);
 
@@ -278,21 +287,23 @@ public class MCTS_Player extends SampleGamer{
 				for(List<Move> action : actions){
 
 					MachineState newState = stateMachine.getNextState(node.state, action);
-                                        if(knownStates.containsKey(newState))
-                                        {
-                                            Node foundNode = knownStates.get(newState);
-                                            foundNode.parents.add(node);
-                                            node.childIndex.add(action);
-                                            node.children.add(foundNode);
-                                        }
-                                        else
-                                        {
-                                                
-    
+                    if(knownStates.containsKey(newState))
+                    {
+                        Node foundNode = knownStates.get(newState);
+                        foundNode.parents.add(node);
+                        node.childIndex.add(action);
+                        node.children.add(foundNode);
+                    }
+                    else
+                    {
 					    List<Pair> pairIndex = new ArrayList<Pair>();
 					    List<Integer> numSim = new ArrayList<Integer>();
 					    List<Integer> valueQ = new ArrayList<Integer>();
 					    for(Role role : stateMachine.getRoles()){
+					    	//Error here in tic tac toe, no legal moves for o player (board is full)
+					    	if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
+					    		break;
+					    	}
 						    for(Move move : stateMachine.getLegalMoves(newState, role)){
 							    Pair newPair = new Pair(move, role);
 							    pairIndex.add(newPair);
@@ -301,18 +312,21 @@ public class MCTS_Player extends SampleGamer{
 						    }
 					    }
 					    Node newNode = new Node(newState, pairIndex, valueQ, numSim, 0);
-                                            knownStates.add(newState,newNode);
+                        knownStates.put(newState,newNode);
 					    newNode.parents.add(node);
 					    //add the newNode to node.children
 					    node.childIndex.add(action);
 					    node.children.add(newNode);
-                                        }
-
+                    }
 				}
+
+			}
+			else{
+				return;
 			}
 		} catch (MoveDefinitionException | TransitionDefinitionException e) {
 			System.out.println("No moves or no transitions");
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
