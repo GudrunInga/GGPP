@@ -359,7 +359,7 @@ public class MCTS_Player extends SampleGamer{
 				e.printStackTrace();
 			}
 		}
-		return 0; //Ætti að vera null eða new array list
+		return null; //Ætti að vera null eða new array list
 	}
 
 	/* From chapter 8
