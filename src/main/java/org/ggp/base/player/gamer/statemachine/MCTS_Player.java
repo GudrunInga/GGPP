@@ -86,7 +86,7 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-		stoptime = timeout - 100;
+		stoptime = timeout - 2000;
 		stateMachine = getStateMachine();
 		knownStates = new HashMap<MachineState, Node>();
 		List<Integer> numSim = new ArrayList<Integer>();
@@ -123,6 +123,7 @@ public class MCTS_Player extends SampleGamer{
 				backpropogate(selected, values, firstMove);
 			}
 		}catch (TimeoutException e){
+			System.out.println(System.currentTimeMillis()-timeout);
 			System.out.println("Times up, lets' do this");
 		}
 
@@ -132,7 +133,7 @@ public class MCTS_Player extends SampleGamer{
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		stoptime = timeout - 500;
+		stoptime = timeout - 4000;
 
 		MachineState currState = getCurrentState();
 		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
@@ -190,6 +191,7 @@ public class MCTS_Player extends SampleGamer{
 					currBestMove = root.pairIndex.get(i).move;
 				}
 			}
+			System.out.println(System.currentTimeMillis()-timeout);
 		}
 
 		return currBestMove;
@@ -217,7 +219,7 @@ public class MCTS_Player extends SampleGamer{
                         return child;
                     }
                 }
-        
+
                 int score=0;
                 Node result = node;
                 //Change from Move to List<Move>, blame expansion
@@ -232,7 +234,7 @@ public class MCTS_Player extends SampleGamer{
                 }
                 node=result;
             }
-            return node; 
+            return node;
 	}
 
     public int selector(Node node, List<Move> moveList)
