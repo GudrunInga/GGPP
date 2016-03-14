@@ -86,7 +86,7 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
-		stoptime = timeout - 2000;
+		stoptime = timeout - 500;
 		stateMachine = getStateMachine();
 		knownStates = new HashMap<MachineState, Node>();
 		List<Integer> numSim = new ArrayList<Integer>();
@@ -140,7 +140,7 @@ public class MCTS_Player extends SampleGamer{
 		// setja hana sem rót.
 		//System.out.println(currState);
 
-		List<Pair> pairIndex = new ArrayList<Pair>();
+		/*List<Pair> pairIndex = new ArrayList<Pair>();
 		List<Integer> numSim = new ArrayList<Integer>();
 		List<Integer> valueQ = new ArrayList<Integer>();
 		for(Role role : stateMachine.getRoles()){
@@ -151,8 +151,12 @@ public class MCTS_Player extends SampleGamer{
 				valueQ.add(0);
 			}
 		}
-		root = new Node(currState, pairIndex, valueQ, numSim, 0);
-
+		root = new Node(currState, pairIndex, valueQ, numSim, 0);*/
+		for(int i = 0; i < root.children.size(); i++){
+			if(root.children.get(i).equals(currState)){
+				root = root.children.get(i);
+			}
+		}
 		int currMaxN = 0;
 		Move currBestMove = stateMachine.getRandomMove(root.state, getRole());
 		try{
@@ -166,10 +170,10 @@ public class MCTS_Player extends SampleGamer{
 			while(true){
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-                                    for(Node parent:selected.parents)
-                                    {
-                                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
-                                    }
+                    for(Node parent:selected.parents)
+                    {
+                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
+                    }
 				//backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
 					continue;
 				}
