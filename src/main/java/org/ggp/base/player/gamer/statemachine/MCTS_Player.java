@@ -155,6 +155,7 @@ public class MCTS_Player extends SampleGamer{
 		for(int i = 0; i < root.children.size(); i++){
 			if(root.children.get(i).equals(currState)){
 				root = root.children.get(i);
+				break;
 			}
 		}
 		int currMaxN = 0;
