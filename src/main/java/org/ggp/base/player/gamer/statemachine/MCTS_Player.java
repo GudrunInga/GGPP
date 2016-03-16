@@ -182,6 +182,7 @@ public class MCTS_Player extends SampleGamer{
 			}
 		}catch (TimeoutException e){
 
+                /*
 			for(int i = 0; i < root.numSim.size(); i++){
 				if(System.currentTimeMillis() >= timeout - 50){
 					break;
@@ -192,9 +193,10 @@ public class MCTS_Player extends SampleGamer{
 				}
 			}
 			System.out.println(System.currentTimeMillis()-timeout);
+                        */
+                    return currBestMove;
 		}
-
-		return currBestMove;
+		//return currBestMove;
 	}
 
         //returns the leaf node of the tree whose children
