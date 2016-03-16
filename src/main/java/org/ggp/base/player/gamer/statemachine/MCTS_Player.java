@@ -136,6 +136,7 @@ public class MCTS_Player extends SampleGamer{
 		stoptime = timeout - 4000;
 
 		MachineState currState = getCurrentState();
+
 		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
 		// setja hana sem rót.
 		//System.out.println(currState);
