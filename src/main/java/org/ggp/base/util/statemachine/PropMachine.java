@@ -3,7 +3,6 @@ package org.ggp.base.util.statemachine;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.ggp.base.util.gdl.grammar.Gdl;
@@ -50,7 +49,7 @@ public class PropMachine extends StateMachine{
 	@Override
 	public int getGoal(MachineState state, Role role)
 			throws GoalDefinitionException {
-		Map<Role, Set<Proposition>> n = propNet.getGoalPropositions();
+		/*Map<Role, Set<Proposition>> n = propNet.getGoalPropositions();
 		 // TODO: Compute the goal for role in state.
 
 		for(Proposition p : propNet.getPropositions()){
@@ -59,9 +58,9 @@ public class PropMachine extends StateMachine{
 				System.out.println("Proposition k " + k);
 
 			}
-		}
+		}*/
 	//Það sem við þurfum mögulega að nota:
-		propNet.getGoalPropositions();
+		//propNet.getGoalPropositions();
 		//if there is more or less than one goal then:
 			//throw new GoalDefinitionException(the machinestate, role);
 
