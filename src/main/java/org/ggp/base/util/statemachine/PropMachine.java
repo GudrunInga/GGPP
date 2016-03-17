@@ -29,9 +29,8 @@ public class PropMachine extends StateMachine{
 
 	@Override
 	public void initialize(List<Gdl> description) {
-		// TODO Auto-generated method stub
 		try {
-			//There is more implementation in SamplePropNetStateMachine, maybe we need that too?
+			/*From SamplePropNetStateMachine*/
 			propNet = OptimizingPropNetFactory.create(description);
 			roles = propNet.getRoles();
             ordering = getOrdering();
@@ -53,9 +52,11 @@ public class PropMachine extends StateMachine{
 			throws GoalDefinitionException {
 		Map<Role, Set<Proposition>> n = propNet.getGoalPropositions();
 		 // TODO: Compute the goal for role in state.
+
 		for(Proposition p : propNet.getPropositions()){
 			for(Proposition k : n.get(role))
-				if(p.equals(state)){
+			{
+				System.out.println("Proposition k " + k);
 
 			}
 		}
@@ -74,6 +75,12 @@ public class PropMachine extends StateMachine{
 	@Override
 	public boolean isTerminal(MachineState state) {
 		// TODO: Compute whether the MachineState is terminal.
+		/*
+		 * Can use ?
+		 * A reference to the single, unique, TerminalProposition.
+		 * private final Proposition terminalProposition;
+		 *
+		 */
 		return false;
 	}
 
@@ -90,6 +97,36 @@ public class PropMachine extends StateMachine{
 	@Override
 	public MachineState getInitialState() {
 		 // TODO: Compute the initial state.
+		//Proposition init = propNet.getInitProposition();
+		Set<Component> components = propNet.getComponents();
+		String delims = "[\";,]";
+		String init = "";
+		for(Component x : components){
+			//System.out.println(x);
+
+			String s = x.getOutputs().toString();
+
+			if(s.contains("init")){
+				//System.out.println(s);
+				String[] tokens = s.split(delims);
+				System.out.println(x.getValue());
+				for(String token : tokens){
+					if(token.contains("init")){
+						//System.out.println(token);
+						//init += token + " ";
+						init += token + " ";
+					}
+				}
+				break;
+			}
+
+		}
+		//System.out.println("This is init" + init);
+
+		//TODO: Create a sett of gdl sentences from the string init, then create a new machine state with that as input
+		//MachineState initState = new MachineState(init);
+
+
 		return null;
 	}
 
