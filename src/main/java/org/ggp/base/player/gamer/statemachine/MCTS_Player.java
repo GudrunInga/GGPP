@@ -9,8 +9,8 @@ import java.util.concurrent.TimeoutException;
 import org.ggp.base.player.gamer.statemachine.sample.SampleGamer;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.util.statemachine.PropMachine;
 import org.ggp.base.util.statemachine.Role;
-import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
@@ -79,15 +79,18 @@ public class MCTS_Player extends SampleGamer{
 	}
 	//Geyma HashMap<MachineState, Node pathToNode> fyrir öll machinestates í trénu
 	HashMap<MachineState, Node> knownStates;
-	StateMachine stateMachine;
+	PropMachine stateMachine;
 	long stoptime;
 	Node root;
-
+	//@Override
+	public PropMachine getInitialState(){
+		return new PropMachine();
+	}
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
 		stoptime = timeout - 500;
-		stateMachine = getStateMachine();
+		stateMachine = new PropMachine();
 		knownStates = new HashMap<MachineState, Node>();
 		List<Integer> numSim = new ArrayList<Integer>();
 		List<Pair> pairIndex = new ArrayList<Pair>();
@@ -460,4 +463,5 @@ public class MCTS_Player extends SampleGamer{
 			}
 		}
 	}
+
 }
