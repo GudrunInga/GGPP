@@ -34,7 +34,7 @@ public class PropMachine extends StateMachine{
 			//There is more implementation in SamplePropNetStateMachine, maybe we need that too?
 			propNet = OptimizingPropNetFactory.create(description);
 			roles = propNet.getRoles();
-            ordering = getOrdering();
+                        ordering = getOrdering();
 
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
@@ -67,14 +67,25 @@ public class PropMachine extends StateMachine{
 		return -1;
 	}
 
-    /**
-     * Computes if the state is terminal. Should return the value
+    
+    /* Computes whether the state is terminal. Should return the value
      * of the terminal proposition for the state.
      */
 	@Override
 	public boolean isTerminal(MachineState state) {
 		// TODO: Compute whether the MachineState is terminal.
-		return false;
+                /*
+                Set<GdlSentence> sentences = state.getContents();
+                Map<GdlSentence,Proposition> base=propNet.getBasePropositions();
+                boolean bitState=new boolean[base.keySet().size()];
+                for(int i=0;i<base.keySet().size();i++)
+                {
+                    bitState[i]=sentences.contains(base.get(base.keyset.get(i)));
+                }
+                Proposition isTerminal = propNet.getTerminalProposition();
+		return isTerminal.value();
+                */
+                return null
 	}
 
 	@Override
