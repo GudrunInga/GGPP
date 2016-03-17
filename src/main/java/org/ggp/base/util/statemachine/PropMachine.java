@@ -35,7 +35,7 @@ public class PropMachine extends StateMachine{
 			propNet = OptimizingPropNetFactory.create(description);
 			roles = propNet.getRoles();
             ordering = getOrdering();
-			propNet.renderToFile("/Desktop/render.txt");
+
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -143,10 +143,4 @@ public class PropMachine extends StateMachine{
 
         return order;
     }
-    //Test function, propably not supposed to be here
-    @Override
-    public PropMachine getStateMachine(){
-    		return new PropMachine();
-    }
-
 }
