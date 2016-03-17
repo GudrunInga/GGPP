@@ -90,7 +90,7 @@ public class MCTS_Player extends SampleGamer{
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
 	{
 		stoptime = timeout - 500;
-		stateMachine = new PropMachine();
+		stateMachine = getPropMachine();
 		knownStates = new HashMap<MachineState, Node>();
 		List<Integer> numSim = new ArrayList<Integer>();
 		List<Pair> pairIndex = new ArrayList<Pair>();
@@ -461,5 +461,9 @@ public class MCTS_Player extends SampleGamer{
 			}
 		}
 	}
+	public final PropMachine getPropMachine()
+    {
+        return stateMachine;
+    }
 
 }
