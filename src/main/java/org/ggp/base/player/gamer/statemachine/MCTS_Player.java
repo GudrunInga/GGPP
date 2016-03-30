@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine;
 
-import is.ru.cadia.ggp.propnet.ForwardPropNetStateMachine;
+import is.ru.cadia.ggp.propnet.BackwardPropNetStateMachine;
 import is.ru.cadia.ggp.propnet.structure.GGPBasePropNetStructureFactory;
 
 import java.util.ArrayList;
@@ -94,10 +94,6 @@ public class MCTS_Player extends SampleGamer{
 	StateMachine stateMachine;
 	long stoptime;
 	Node root;
-	//@Override
-	/*public PropMachine getInitialState(){
-		return new PropMachine();
-	}*/
 
 	@Override
 	public void stateMachineMetaGame(long timeout)throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
@@ -110,6 +106,7 @@ public class MCTS_Player extends SampleGamer{
 		List<Pair> pairIndex = new ArrayList<Pair>();
 		List< Integer> valueQ = new ArrayList<Integer>();
 		MachineState newState = stateMachine.getInitialState();
+
 		for(Role role : stateMachine.getRoles()){
 			for(Move move : stateMachine.getLegalMoves(newState, role)){
 				Pair newPair = new Pair(move, role);
@@ -121,13 +118,12 @@ public class MCTS_Player extends SampleGamer{
 		root = new Node(newState, pairIndex, valueQ, numSim, 0);
 		try{
 			while(true){
-
 				Node selected = selection(root);
 				if(stateMachine.isTerminal(selected.state)){
-                                    for(Node parent:selected.parents)
-                                    {
-                                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
-                                    }
+                    for(Node parent:selected.parents)
+                    {
+                        backpropogate(parent,stateMachine.getGoals(selected.state),selected);
+                    }
 					//backpropogate(selected, stateMachine.getGoal(selected.state, getRole()), stateMachine.getRandomJointMove(selected.state));
 					continue;
 				}
@@ -150,32 +146,27 @@ public class MCTS_Player extends SampleGamer{
 	public Move stateMachineSelectMove(long timeout)
 			throws TransitionDefinitionException, MoveDefinitionException,
 			GoalDefinitionException {
-		stoptime = timeout - 4000;
+		stoptime = timeout - 500;
 
 		MachineState currState = getCurrentState();
 
 		//TODO knownStates, fletta upp í því með currState og fá nóðuna sem þar á við og
 		// setja hana sem rót.
+		if(knownStates.containsKey(currState))
+        {
+            root = knownStates.get(currState);
+        }
 		//System.out.println(currState);
+		else{
+			for(int i = 0; i < root.children.size(); i++){
+				if(root.children.get(i).equals(currState)){
+					System.out.println("root.children.get(i).equals(currState");
+					root = root.children.get(i);
+					break;
+				}
+			}
+		}
 
-		/*List<Pair> pairIndex = new ArrayList<Pair>();
-		List<Integer> numSim = new ArrayList<Integer>();
-		List<Integer> valueQ = new ArrayList<Integer>();
-		for(Role role : stateMachine.getRoles()){
-			for(Move move : stateMachine.getLegalMoves(currState, role)){
-				Pair newPair = new Pair(move, role);
-				pairIndex.add(newPair);
-				numSim.add(0);
-				valueQ.add(0);
-			}
-		}
-		root = new Node(currState, pairIndex, valueQ, numSim, 0);*/
-		for(int i = 0; i < root.children.size(); i++){
-			if(root.children.get(i).equals(currState)){
-				root = root.children.get(i);
-				break;
-			}
-		}
 		int currMaxN = 0;
 		Move currBestMove = stateMachine.getRandomMove(root.state, getRole());
 		try{
@@ -214,56 +205,68 @@ public class MCTS_Player extends SampleGamer{
 					currMaxN = root.numSim.get(i);
 					currBestMove = root.pairIndex.get(i).move;
 				}
-			}
-			System.out.println(System.currentTimeMillis()-timeout);
-                        */
-                    return currBestMove;
+			}*/
+			System.out.println("Timeout " + (System.currentTimeMillis()-timeout));
+                        
+            return currBestMove;
 		}
 		//return currBestMove;
 	}
 
-        //returns the leaf node of the tree whose children
-        //will be added to the tree, and from which the
-        //current simulation will be run
+	//returns the leaf node of the tree whose children
+	//will be added to the tree, and from which the
+	//current simulation will be run
 	public Node selection(Node node) throws TimeoutException{
-            while(!node.children.isEmpty())
-            {
-		if(System.currentTimeMillis() >= stoptime){
-			throw new TimeoutException();
-		}
-                if(node.children.isEmpty())
-                {
-                    return node;
-                }
-                //Change from Move to List<Move>, blame expansion
-                for(int i = 0; i < node.children.size(); i++)
-                {
-                    Node child = node.children.get(i);
-                    if(child.children.isEmpty())
-                    {
-                        return child;
-                    }
-                }
 
-                int score=0;
-                Node result = node;
-                //Change from Move to List<Move>, blame expansion
-                for(int i = 0; i < node.children.size(); i++){
-                    Node child = node.children.get(i);
-                    int newScore = selector(node, node.childIndex.get(i));
-                    if(newScore>score)
-                    {
-                        score=newScore;
-                        result = child;
-                    }
+	    while(!node.children.isEmpty())
+	    {
+			if(System.currentTimeMillis() >= stoptime){
+				System.out.println("Timeout in selection " + (System.currentTimeMillis()-stoptime));
+				throw new TimeoutException();
+			}
+            /*if(node.children.isEmpty()) //?? why check if empty if while loop is also checking?
+            {
+                return node;
+            }*/
+
+            //Commented out, shouldn't need a for loop just for that check,
+            //we can check for this in the next for loop (below Node result = node)
+            /*for(int i = 0; i < node.children.size(); i++)
+            {
+                Node child = node.children.get(i);
+                if(child.children.isEmpty())
+                {
+                    return child;
                 }
-                node=result;
+            }*/
+
+            int score=0;
+            Node result = node;
+            //Change from Move to List<Move>, blame expansion
+            for(int i = 0; i < node.children.size(); i++){
+                Node child = node.children.get(i);
+                if(child.children.isEmpty())
+                {
+                    return child;
+                }
+                int newScore = selector(node, node.childIndex.get(i));
+                if(newScore > score)
+                {
+                    score = newScore;
+                    result = child;
+                }
             }
-            return node;
+            node=result;
+        }
+        return node;
 	}
 
-    public int selector(Node node, List<Move> moveList)
+    public int selector(Node node, List<Move> moveList) throws TimeoutException
     {
+    	if(System.currentTimeMillis() >= stoptime){
+			System.out.println("Timeout in selector " + (System.currentTimeMillis()-stoptime));
+			throw new TimeoutException();
+		}
     	//Random rand = new Random();
         //return rand.nextInt(100);
         int sum = 0;
@@ -275,7 +278,7 @@ public class MCTS_Player extends SampleGamer{
         	int index = 0;
         	Pair pair = new Pair(moveList.get(roleMap.get(role)), role);
         	for(int i = 0; i < node.pairIndex.size(); i++){
-        		if(pair == node.pairIndex.get(i)){
+        		if(pair.equals(node.pairIndex.get(i))){
         			index = i;
         			break;
         		}
@@ -283,12 +286,8 @@ public class MCTS_Player extends SampleGamer{
         	sum += node.valueQ.get(index) + C * Math.sqrt(Math.log(node.numVisits)/node.numSim.get(index));
         					//C * is the uct exploration term
         }
-
         return sum;
-
     }
-
-
 
     /*From chapter 8
      * function expand (node){
@@ -332,10 +331,9 @@ public class MCTS_Player extends SampleGamer{
 					    List<Integer> numSim = new ArrayList<Integer>();
 					    List<Integer> valueQ = new ArrayList<Integer>();
 					    for(Role role : stateMachine.getRoles()){
-					    	//Error here in tic tac toe, no legal moves for o player (board is full)
-					    	if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
+					    	/*if(stateMachine.isTerminal(newState)){ //SKÍTALAUSN, er eiginlega ekki lausn
 					    		break;
-					    	}
+					    	}*/
 						    for(Move move : stateMachine.getLegalMoves(newState, role)){
 							    Pair newPair = new Pair(move, role);
 							    pairIndex.add(newPair);
@@ -367,6 +365,7 @@ public class MCTS_Player extends SampleGamer{
 	 */
 	public List<Integer> simulation(MachineState state) throws TimeoutException{
 		if(System.currentTimeMillis() >= stoptime){
+			System.out.println("Timeout in simulation");
 			throw new TimeoutException();
 		}
 		if(stateMachine.isTerminal(state)){
@@ -382,7 +381,7 @@ public class MCTS_Player extends SampleGamer{
 				return simulation(stateMachine.getRandomNextState(state));
 			} catch (MoveDefinitionException e) {
 				// TODO Auto-generated catch block
-				System.out.println("No goddam moves allowed for non-terminal state");
+				System.out.println("No moves allowed for non-terminal state");
 				e.printStackTrace();
 			} catch (TransitionDefinitionException e) {
 				// TODO Auto-generated catch block
@@ -404,6 +403,7 @@ public class MCTS_Player extends SampleGamer{
 	public void backpropogate(Node node, List<Integer> scores, Node callingNode) throws TimeoutException
 	{
 		if(System.currentTimeMillis() >= stoptime){
+			System.out.println("Timeout in backpropogate parent, scores, callingNode " + (System.currentTimeMillis()-stoptime));
 			throw new TimeoutException();
 		}
 		node.numVisits += 1;
@@ -448,6 +448,7 @@ public class MCTS_Player extends SampleGamer{
 	public void backpropogate(Node node, List<Integer> scores, List<Move> moves) throws TimeoutException
 	{
 		if(System.currentTimeMillis() >= stoptime){
+			System.out.println("Timeout in the other backpropogate function " + (System.currentTimeMillis()-stoptime));
 			throw new TimeoutException();
 		}
 		node.numVisits += 1;
@@ -466,7 +467,7 @@ public class MCTS_Player extends SampleGamer{
 			node.pairIndex.add(pair);
 			node.numSim.add(value+1);
 
-                        int score=scores.get(roleMap.get(role));
+            int score=scores.get(roleMap.get(role));
 			int avgQ = node.valueQ.get(index);
 			avgQ = avgQ + ((score-avgQ)/node.numVisits);
 			node.valueQ.add(avgQ);
@@ -481,8 +482,8 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public StateMachine getInitialStateMachine()//getPropMachine()
     {
-		//return new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
-		return new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+		return new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+		//return new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
 	}
 
 }
