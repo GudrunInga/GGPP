@@ -1,6 +1,6 @@
 package org.ggp.base.player.gamer.statemachine;
 
-import is.ru.cadia.ggp.propnet.BackwardPropNetStateMachine;
+import is.ru.cadia.ggp.propnet.ForwardPropNetStateMachine;
 import is.ru.cadia.ggp.propnet.structure.GGPBasePropNetStructureFactory;
 
 import java.util.ArrayList;
@@ -46,8 +46,16 @@ public class MCTS_Player extends SampleGamer{
 		@Override
 		public int compareTo(Pair pair)
 		{
+			if(this.move == pair.move && this.role == pair.role){
+				return 0;
+			}
+			else if(this.move == pair.move || this.role == pair.role){
+				return 1;
+			}
+			else{
+				return -1;
+			}
 
-			return 0;
 		}
 	}
 	private class Node{
@@ -473,8 +481,8 @@ public class MCTS_Player extends SampleGamer{
 	@Override
 	public StateMachine getInitialStateMachine()//getPropMachine()
     {
-		return new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
-		//return new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+		//return new BackwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
+		return new ForwardPropNetStateMachine(new GGPBasePropNetStructureFactory());
 	}
 
 }
